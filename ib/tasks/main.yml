@@ -34,7 +34,7 @@
     - reboot
 
 - name: Waiting for server to come back
-  local_action: wait_for delay=15 host={{ inventory_hostname }}
+  local_action: wait_for delay=20 host={{ inventory_hostname }}
                 state=started port=22
   when: result.stderr.find("does not exist") != -1
   tags:
@@ -44,6 +44,11 @@
 
 - name: ifcfg for ib0
   action: template src=ifcfg-ib0.j2 dest=/etc/sysconfig/network-scripts/ifcfg-ib0
+  when: ib0 is defined
+
+- name: ifcfg for ib1
+  action: template src=ifcfg-ib1.j2 dest=/etc/sysconfig/network-scripts/ifcfg-ib1
+  when: ib1 is defined
 
 - name: route multicast traffic over ib
   copy:
@@ -52,6 +57,16 @@
     owner: root
     group: root
     mode: 0644
+  when: ib0 is defined
+
+- name: route multicast traffic over ib
+  copy:
+    src: route-ib1
+    dest: /etc/sysconfig/network-scripts/route-ib1
+    owner: root
+    group: root
+    mode: 0644
+  when: ib1 is defined
 
 - name: stop ib0 interface
   command: /sbin/ifdown ib0
@@ -59,12 +74,14 @@
 - name: start ib0 interface
   command: /sbin/ifup ib0
 
+- name: stop ib1 interface
+  command: /sbin/ifdown ib1
+
+- name: start ib1 interface
+  command: /sbin/ifup ib1
+
 - name: iptables configuration
   action: template src=iptables.j2 dest=/etc/sysconfig/iptables
-  tags:
-    - firewall
-
-- name: restart iptables
-  service: name=iptables state=restarted
+  notify: restart iptables
   tags:
     - firewall

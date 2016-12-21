@@ -121,3 +121,14 @@
     user: root
     key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/sm_id_rsa.pub') }}"
 
+- name: clone perl wrapper from git
+  git:
+    repo: https://github.com/Duke-GCB/ScriptWrapper.git
+    dest: /tmp/ScriptWrapper
+
+- name: copy perl script wrapper script
+  copy:
+    remote_src: True
+    src: /tmp/ScriptWrapper/scriptwrapper.sh
+    dest: /usr/local/bin/perl
+    mode: 0755

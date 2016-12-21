@@ -46,7 +46,7 @@
     - reboot
 
 - name: Waiting for server to come back
-  local_action: wait_for delay=15 host={{ inventory_hostname }}
+  local_action: wait_for delay=20 host={{ inventory_hostname }}
                 state=started port=22
   when: reboot_hint.stdout.find("reboot") != -1
   tags:

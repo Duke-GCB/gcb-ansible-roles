@@ -13,7 +13,7 @@
     creates: /opt/splunkforwarder/etc/apps/dhts_all_deploymentclient
 
 - name: Start splunk
-  command:  /opt/splunkforwarder/bin/splunk start
+  command:  /opt/splunkforwarder/bin/splunk start --answer-yes
 
 - name: Create init scripts
   command:  /opt/splunkforwarder/bin/splunk enable boot-start

@@ -4,3 +4,6 @@ hpc:
     - java-1.7.0-openjdk
     - gsl
     - libgfortran
+    - lapack
+    - blas
+    - libicu

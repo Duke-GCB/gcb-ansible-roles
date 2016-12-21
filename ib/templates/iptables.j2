@@ -11,6 +11,7 @@
 # Accept all traffic on private network
 -A INPUT -i eth2 -j ACCEPT
 -A INPUT -i ib0 -j ACCEPT
+-A INPUT -i ib1 -j ACCEPT
 
 # Accept related and established connections
 -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
