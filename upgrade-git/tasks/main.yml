@@ -1,0 +1,11 @@
+---
+
+- name: remove old git
+  yum:
+    name: git
+    state: absent
+
+- name: install new git
+  yum:
+    name: git2u
+    state: present
