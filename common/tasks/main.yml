@@ -34,6 +34,14 @@
   yum: name={{ item }} state=present
   with_items: "{{ base_packages }}"
 
+- name: Remove stacki repo
+  when: ansible_os_family == 'RedHat'
+  become: yes
+  become_method: sudo
+  file:
+    state: absent
+    path: /etc/yum.repos.d/stacki.repo
+
 - name: Reboot
   become: yes
   become_method: sudo

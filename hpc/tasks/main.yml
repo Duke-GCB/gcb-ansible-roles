@@ -121,6 +121,11 @@
     user: root
     key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/sm_id_rsa.pub') }}"
 
+- name: remove perl wrapper git clone
+  file:
+    state: absent
+    path: /tmp/ScriptWrapper
+
 - name: clone perl wrapper from git
   git:
     repo: https://github.com/Duke-GCB/ScriptWrapper.git
