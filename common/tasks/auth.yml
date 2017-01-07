@@ -20,7 +20,9 @@
     group: root
     mode: 644
     force: no
-  notify: Rehash OpenLDAP Cacerts
+
+- name: Rehash OpenLDAP Cacerts
+  command: cacertdir_rehash /etc/openldap/cacerts
 
 - name: Copy sssd conf
   action: template src=sssd.j2 dest=/etc/sssd/sssd.conf owner=root group=root mode=0600

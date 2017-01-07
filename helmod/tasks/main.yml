@@ -7,7 +7,6 @@
     - lua
     - lua-filesystem
     - lua-posix
-    - lua-devel
 
 - name: Create nfs directory
   file:

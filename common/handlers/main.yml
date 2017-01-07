@@ -1,8 +1,4 @@
 ---
-
-- name: Rehash OpenLDAP Cacerts
-  command: cacertdir_rehash /etc/openldap/cacerts
-
 - name: Reload sssd
   service:
     name: sssd

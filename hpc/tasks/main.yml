@@ -34,26 +34,39 @@
     name: munge
     state: present
 
-- name: install slurm plugins
-  yum:
-    name: /data/itlab/slurm/slurm-plugins-14.11.9-1.el6.x86_64.rpm
-
-- name: install slurm base
-  yum:
-    name: /data/itlab/slurm/slurm-14.11.9-1.el6.x86_64.rpm
-    state: present
+#- name: install slurm plugins
+#  yum:
+#    name: /data/itlab/slurm/slurm-plugins-14.11.9-1.el6.x86_64.rpm
+#
+#- name: install slurm base
+#  yum:
+#    name: /data/itlab/slurm/slurm-14.11.9-1.el6.x86_64.rpm
+#    state: present
+#
+#- name: install slurm
+#  yum:
+#    name: "{{item}}"
+#    state: present
+#  with_items:
+#    - /data/itlab/slurm/slurm-devel-14.11.9-1.el6.x86_64.rpm
+#    - /data/itlab/slurm/slurm-munge-14.11.9-1.el6.x86_64.rpm
+#    - /data/itlab/slurm/slurm-pam_slurm-14.11.9-1.el6.x86_64.rpm
+#    - /data/itlab/slurm/slurm-perlapi-14.11.9-1.el6.x86_64.rpm
+#    - /data/itlab/slurm/slurm-sjobexit-14.11.9-1.el6.x86_64.rpm
+#    - /data/itlab/slurm/slurm-sjstat-14.11.9-1.el6.x86_64.rpm
 
 - name: install slurm
   yum:
     name: "{{item}}"
     state: present
   with_items:
-    - /data/itlab/slurm/slurm-devel-14.11.9-1.el6.x86_64.rpm
-    - /data/itlab/slurm/slurm-munge-14.11.9-1.el6.x86_64.rpm
-    - /data/itlab/slurm/slurm-pam_slurm-14.11.9-1.el6.x86_64.rpm
-    - /data/itlab/slurm/slurm-perlapi-14.11.9-1.el6.x86_64.rpm
-    - /data/itlab/slurm/slurm-sjobexit-14.11.9-1.el6.x86_64.rpm
-    - /data/itlab/slurm/slurm-sjstat-14.11.9-1.el6.x86_64.rpm
+    - slurm
+    - slurm-devel
+    - slurm-munge
+    - slurm-pam_slurm
+    - slurm-perlapi
+    - slurm-sjobexit
+    - slurm-sjstat
 
 - name: install additional packages
   yum:

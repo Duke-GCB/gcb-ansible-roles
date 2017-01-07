@@ -9,7 +9,7 @@
   copy: content="%{{ deploy.user }} ALL=(ALL) NOPASSWD:ALL" dest="/etc/sudoers.d/{{ deploy.user }}" owner=root group=root mode=0440
 
 - name: Create user
-  user: name={{ deploy.user }} state=present group={{ deploy.group }} shell=/bin/bash home={{ deploy.home_dir }}{{ deploy.user }} uid={{ deploy.uid }}
+  user: name={{ deploy.user }} state=present group={{ deploy.group }} shell=/bin/bash home={{ deploy.home_dir }} uid={{ deploy.uid }}
 
 - stat: path=/tmp
   register: t
