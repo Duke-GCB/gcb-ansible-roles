@@ -8,7 +8,7 @@
     name: worker
     image: dukegcb/imads-worker
     networks:
-      - "{{ imads.network }}"
+      - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
       - "{{ imads.data_root }}/pred_data/models/:/models/:ro"
