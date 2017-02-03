@@ -32,7 +32,7 @@
       - "{{ imads.data_root }}/var/lib/postgresql/data:/var/lib/postgresql/data"
     pull: true
     state: started
-    restarted: "{{db_restart}}"
+    restart: "{{db_restart}}"
     restart_policy: always
 
 - pause: seconds=1
