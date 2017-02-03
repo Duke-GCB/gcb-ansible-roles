@@ -1,15 +1,16 @@
 # Daemon that purges database records after certain time periods.
 
 - name: Create database vacuum container
-  docker:
+  docker_container:
     image: dukegcb/imads
     name: vacuum
-    net: "{{ imads.network }}"
+    networks:
+      - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     command: python vacuum.py 2880
     volumes:
       - /etc/external/:/etc/external/
       - "{{ imads.data_root }}/pred_data:/tmp/pred_data"
-    pull: always
-    state: reloaded
+    pull: true
+    state: started
     restart_policy: always

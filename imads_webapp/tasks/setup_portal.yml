@@ -1,10 +1,11 @@
 # Runs webserver that reads database and sends jobs to worker daemon.
 
 - name: Create web portal container
-  docker:
+  docker_container:
     image: dukegcb/imads-apache
     name: web
-    net: "{{ imads.network }}"
+    networks:
+      - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
       - /etc/external/:/etc/external/
@@ -12,6 +13,6 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: always
-    state: reloaded
+    pull: true
+    state: started
     restart_policy: always

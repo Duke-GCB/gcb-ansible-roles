@@ -4,16 +4,17 @@
 # This requires /pred_data/work directory it will use for temporary storage.
 
 - name: Create predictions worker container
-  docker:
+  docker_container:
     name: worker
     image: dukegcb/imads-worker
-    net: "{{ imads.network }}"
+    networks:
+      - "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
       - "{{ imads.data_root }}/pred_data/models/:/models/:ro"
       - "{{ imads.data_root }}/pred_data/work/:/work/:rw"
-    pull: always
-    state: reloaded
+    pull: true
+    state: started
     restart_policy: always
 
 - name: Place YAML metadata for worker
