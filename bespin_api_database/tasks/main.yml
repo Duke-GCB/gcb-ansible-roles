@@ -16,8 +16,14 @@
   become_user: postgres
   postgresql_user: db={{bespin_api_database.dbname}} name={{bespin_api_database.username}} password={{bespin_api_database.password}} priv=ALL
 
+- lineinfile:
+    dest: /etc/postgresql/9.5/main/postgresql.conf
+    line: "listen_addresses = '*'"
 
-#host    postgres        all             192.168.12.10/32        md5
+- lineinfile:
+    dest: /etc/postgresql/9.5/main/pg_hba.conf
+    line: 'host     all             all         0.0.0.0/0          md5'
 
-
-
+- name: restart postgres
+  command: /usr/lib/postgresql/9.5/bin/pg_ctl -D /var/lib/postgresql/9.5/main restart
+  become_user: postgres
