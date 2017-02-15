@@ -1,0 +1,23 @@
+- name: Update apt cache
+  apt: update_cache=yes
+
+- name: Install Postgres packages
+  apt: name={{item}}
+  with_items:
+    - postgresql
+    - libpq-dev
+    - python-psycopg2
+
+- name: Create our database
+  become_user: postgres
+  postgresql_db: name={{bespin_api_database.dbname}}
+
+- name: ensure user has access to database
+  become_user: postgres
+  postgresql_user: db={{bespin_api_database.dbname}} name={{bespin_api_database.username}} password={{bespin_api_database.password}} priv=ALL
+
+
+#host    postgres        all             192.168.12.10/32        md5
+
+
+
