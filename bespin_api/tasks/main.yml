@@ -49,6 +49,13 @@
       SetEnv BESPIN_CORS_HOST "{{ bespin_api.cors_host }}"
       SetEnv BESPIN_STATIC_ROOT "{{ bespin_api.static_root }}"
 
+- name: Create lando user with token
+  command: python manage.py makeusertoken --settings=bespin.settings_prod {{ bespin_api.lando_username }} {{ bespin_api.lando_token }}
+  args:
+    chdir: /srv/bespin_api/
+  environment:
+    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+
 - service:
     name: apache2
     state: restarted
