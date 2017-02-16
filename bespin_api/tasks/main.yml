@@ -17,6 +17,11 @@
 - pip:
     requirements: /srv/bespin_api/requirements.txt
 
+- name: Make temp dir for static
+  file:
+    path: /srv/bespin_api/static
+    state: directory
+
 - name: Create static directory for django app
   command: python manage.py collectstatic --noinput --settings=bespin.settings_prod
   args:
@@ -35,6 +40,7 @@
       </Directory>
       WSGIScriptAlias / /srv/bespin_api/bespin/wsgi.py
       WSGIPythonPath /srv/bespin_api/
+      WSGIPassAuthorization on
       <Directory /srv/bespin_api/bespin>
         <Files wsgi.py>
           Require all granted
@@ -49,12 +55,36 @@
       SetEnv BESPIN_CORS_HOST "{{ bespin_api.cors_host }}"
       SetEnv BESPIN_STATIC_ROOT "{{ bespin_api.static_root }}"
 
-- name: Create lando user with token
-  command: python manage.py makeusertoken --settings=bespin.settings_prod {{ bespin_api.lando_username }} {{ bespin_api.lando_token }}
+- name: Setup database
+  command: python manage.py migrate --settings=bespin.settings_prod
   args:
     chdir: /srv/bespin_api/
   environment:
     BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+    BESPIN_ALLOWED_HOST: "{{ bespin_api.allowed_host }}"
+    BESPIN_DB_NAME: "{{ bespin_api.db_name }}"
+    BESPIN_DB_USER: "{{ bespin_api.db_user }}"
+    BESPIN_DB_PASSWORD: "{{ bespin_api.db_password }}"
+    BESPIN_DB_HOST: "{{ bespin_api.db_host }}"
+    BESPIN_CORS_HOST: "{{ bespin_api.cors_host }}"
+    BESPIN_STATIC_ROOT: "{{ bespin_api.static_root }}"
+
+- name: Create lando user with token
+  command: python manage.py makeusertoken --settings=bespin.settings_prod {{ bespin_api.lando_username }} {{ bespin_api.lando_password }} {{ bespin_api.lando_token }}
+  run_once: true
+  args:
+    chdir: /srv/bespin_api/
+  environment:
+    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+    BESPIN_ALLOWED_HOST: "{{ bespin_api.allowed_host }}"
+    BESPIN_DB_NAME: "{{ bespin_api.db_name }}"
+    BESPIN_DB_USER: "{{ bespin_api.db_user }}"
+    BESPIN_DB_PASSWORD: "{{ bespin_api.db_password }}"
+    BESPIN_DB_HOST: "{{ bespin_api.db_host }}"
+    BESPIN_CORS_HOST: "{{ bespin_api.cors_host }}"
+    BESPIN_STATIC_ROOT: "{{ bespin_api.static_root }}"
 
 - service:
     name: apache2
