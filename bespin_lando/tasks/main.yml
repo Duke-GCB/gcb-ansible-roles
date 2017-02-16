@@ -1,0 +1,21 @@
+- name: Update apt cache
+  apt: update_cache=yes
+
+- name: Install pip
+  apt: name={{item}}
+  with_items:
+    - python-pip
+
+- pip:
+    name: git+git://github.com/Duke-GCB/lando-messaging.git
+    editable: false
+
+- pip:
+    name: git+git://github.com/Duke-GCB/lando.git
+    editable: false
+
+- name: Setup lando config
+  blockinfile:
+    dest: /etc/lando_config.yml
+    block: "{{ bespin_lando.config }}"
+    create: yes
