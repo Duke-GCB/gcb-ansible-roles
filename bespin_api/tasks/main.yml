@@ -12,7 +12,43 @@
 - git:
     repo: https://github.com/Duke-GCB/bespin-api.git
     dest: /srv/bespin_api
+    version: prod_settings
 
 - pip:
     requirements: /srv/bespin_api/requirements.txt
 
+- name: Create static directory for django app
+  command: python manage.py collectstatic --noinput --settings=bespin.settings_prod
+  args:
+    chdir: /srv/bespin_api/
+  environment:
+    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+    BESPIN_STATIC_ROOT: "{{ bespin_api.static_root }}"
+
+- name: Setup apache config
+  blockinfile:
+    dest: /etc/apache2/apache2.conf
+    block: |
+      Alias /static/ /srv/static/
+      <Directory /srv/static>
+        Require all granted
+      </Directory>
+      WSGIScriptAlias / /srv/bespin_api/bespin/wsgi.py
+      WSGIPythonPath /srv/bespin_api/
+      <Directory /srv/bespin_api/bespin>
+        <Files wsgi.py>
+          Require all granted
+        </Files>
+      </Directory>
+      SetEnv BESPIN_SECRET_KEY "{{ bespin_api.secret_key }}"
+      SetEnv BESPIN_ALLOWED_HOST "{{ bespin_api.allowed_host }}"
+      SetEnv BESPIN_DB_NAME "{{ bespin_api.db_name }}"
+      SetEnv BESPIN_DB_USER "{{ bespin_api.db_user }}"
+      SetEnv BESPIN_DB_PASSWORD "{{ bespin_api.db_password }}"
+      SetEnv BESPIN_DB_HOST "{{ bespin_api.db_host }}"
+      SetEnv BESPIN_CORS_HOST "{{ bespin_api.cors_host }}"
+      SetEnv BESPIN_STATIC_ROOT "{{ bespin_api.static_root }}"
+
+- service:
+    name: apache2
+    state: restarted
