@@ -19,3 +19,22 @@
     dest: /etc/lando_config.yml
     block: "{{ bespin_lando.config }}"
     create: yes
+
+- name: Setup lando service
+  blockinfile:
+    dest: /etc/systemd/system/lando.service
+    create: yes
+    block: |
+      [Unit]
+      Description=Lando Service
+      After=multi-user.target
+      [Service]
+      Type=idle
+      ExecStart=/usr/local/bin/lando
+      User=ubuntu
+      [Install]
+      WantedBy=multi-user.target
+
+- service:
+    name: lando
+    state: started
