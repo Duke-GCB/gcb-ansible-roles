@@ -61,7 +61,6 @@
     chdir: /srv/bespin_api/
   environment:
     BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
-    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
     BESPIN_ALLOWED_HOST: "{{ bespin_api.allowed_host }}"
     BESPIN_DB_NAME: "{{ bespin_api.db_name }}"
     BESPIN_DB_USER: "{{ bespin_api.db_user }}"
@@ -76,7 +75,6 @@
   args:
     chdir: /srv/bespin_api/
   environment:
-    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
     BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
     BESPIN_ALLOWED_HOST: "{{ bespin_api.allowed_host }}"
     BESPIN_DB_NAME: "{{ bespin_api.db_name }}"
