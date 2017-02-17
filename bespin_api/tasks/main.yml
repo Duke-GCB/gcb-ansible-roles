@@ -69,6 +69,10 @@
     BESPIN_CORS_HOST: "{{ bespin_api.cors_host }}"
     BESPIN_STATIC_ROOT: "{{ bespin_api.static_root }}"
 
+- stat:
+    path: /srv/created_lando_user
+  register: created_lando_user
+
 - name: Create lando user with token
   command: python manage.py makeusertoken --settings=bespin.settings_prod {{ bespin_api.lando_username }} {{ bespin_api.lando_password }} {{ bespin_api.lando_token }}
   run_once: true
@@ -83,6 +87,11 @@
     BESPIN_DB_HOST: "{{ bespin_api.db_host }}"
     BESPIN_CORS_HOST: "{{ bespin_api.cors_host }}"
     BESPIN_STATIC_ROOT: "{{ bespin_api.static_root }}"
+  when: created_lando_user.stat.exists == False
+
+- file:
+    state: touch
+    path: /srv/created_lando_user
 
 - service:
     name: apache2
