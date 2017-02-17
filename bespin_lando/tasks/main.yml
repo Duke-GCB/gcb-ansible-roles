@@ -20,6 +20,12 @@
     block: "{{ bespin_lando.config }}"
     create: yes
 
+- file:
+    dest: /work
+    state: directory
+    owner: ubuntu
+    mode: 0744
+
 - name: Setup lando service
   blockinfile:
     dest: /etc/systemd/system/lando.service
@@ -31,6 +37,7 @@
       [Service]
       Type=idle
       ExecStart=/usr/local/bin/lando
+      WorkingDirectory=/work
       User=ubuntu
       [Install]
       WantedBy=multi-user.target
