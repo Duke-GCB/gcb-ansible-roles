@@ -1,0 +1,13 @@
+# This one has a hard coded ip address for bespin-api
+#- name: Create bespin_ui container
+#  docker_container:
+#    image: quay.io/dukegcb/bespin-ui
+#    name: web
+#    volumes:
+#      - /etc/external/:/etc/external/
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    pull: true
+#    state: started
+#    restart_policy: always
