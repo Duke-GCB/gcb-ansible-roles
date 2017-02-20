@@ -1,13 +1,77 @@
-# This one has a hard coded ip address for bespin-api
-#- name: Create bespin_ui container
-#  docker_container:
-#    image: quay.io/dukegcb/bespin-ui
-#    name: web
-#    volumes:
-#      - /etc/external/:/etc/external/
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    pull: true
-#    state: started
-#    restart_policy: always
+- name: Set node Version
+  set_fact:
+    node_version: 'node-v6.9.5-linux-x64'
+
+- name: Set node URL
+  set_fact:
+    node_url: "https://nodejs.org/dist/v6.9.5/{{ node_version }}.tar.xz"
+
+- name: Set node Command
+  set_fact:
+    node_cmd: "/tmp/{{ node_version }}/bin/node"
+
+- name: Set npm Command
+  set_fact:
+    npm_cmd: "/tmp/{{ node_version }}/bin/npm"
+
+- name: Install apache2 packages
+  apt: name={{item}}
+  with_items:
+    - apache2
+
+- name: Download and extract stable nodejs release 6.9.5
+  unarchive:
+    src: "{{ node_url }}"
+    dest: /tmp
+    remote_src: True
+
+- git:
+    repo: https://github.com/Duke-GCB/bespin-ui.git
+    dest: /src/bespin-ui
+    force: yes
+
+- file:
+    path: /src/bespin-ui
+    owner: ubuntu
+    state: directory
+    mode: 0755
+
+- name: install bower
+  command: "{{ npm_cmd }} install -g bower"
+
+- name: install ember-cli
+  command: "{{ npm_cmd }} install -g ember-cli"
+
+- name: install npm packages
+  command: "{{ npm_cmd }} install"
+  args:
+    chdir: /src/bespin-ui
+    creates: /tmp/bespin-ui/node_modules
+
+- name: install bower packages
+  command: bower install
+  become: Yes
+  become_user: ubuntu
+  args:
+    chdir: /src/bespin-ui
+    creates: /tmp/bespin-ui/bower_components
+
+- name: Setup api server config
+  lineinfile:
+    dest: /src/bespin-ui/config/environment.js
+    regexp: 'ENV.APP.API_HOST = '
+    line: "    ENV.APP.API_HOST = '{{ bespin_ui.api_host }}',"
+    insertafter: "if (environment === 'production') {"
+
+- name: build bespin ui
+  command: ember build --environment production
+  args:
+    chdir: /src/bespin-ui
+    creates: /tmp/bespin-ui/node_modules
+
+- name: copy ember website
+  command: 'bash -c "cp -r /src/bespin-ui/dist/* /var/www/html"'
+
+- service:
+    name: apache2
+    state: restarted

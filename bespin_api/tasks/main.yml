@@ -13,6 +13,7 @@
     repo: https://github.com/Duke-GCB/bespin-api.git
     dest: /srv/bespin_api
     version: prod_settings
+    force: yes
 
 - pip:
     requirements: /srv/bespin_api/requirements.txt
