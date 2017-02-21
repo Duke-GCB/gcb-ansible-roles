@@ -2,15 +2,15 @@
   apt:
     deb: https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.6/rabbitmq-server_3.6.6-1_all.deb
     state: present
-- rabbitmq_user: user="{{bespin_rabbit.username}}"
-                 password="{{bespin_rabbit.password}}"
+- rabbitmq_user: user="{{bespin_settings.rabbit.username}}"
+                 password="{{bespin_settings.rabbit.password}}"
                  vhost=/
                  configure_priv=.*
                  read_priv=.*
                  write_priv=.*
                  state=present
-- rabbitmq_user: user="{{bespin_rabbit.worker_username}}"
-                 password="{{bespin_rabbit.worker_password}}"
+- rabbitmq_user: user="{{bespin_settings.rabbit.worker_username}}"
+                 password="{{bespin_settings.rabbit.worker_password}}"
                  vhost=/
                  configure_priv=.*
                  read_priv=.*

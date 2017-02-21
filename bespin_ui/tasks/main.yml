@@ -72,7 +72,7 @@
   lineinfile:
     dest: /src/bespin-ui/config/environment.js
     regexp: 'ENV.APP.API_HOST = '
-    line: "    ENV.APP.API_HOST = '{{ bespin_ui.api_host }}',"
+    line: "    ENV.APP.API_HOST = 'http://{{ bespin_settings.api.host }}',"
     insertafter: "if (environment === 'production') {"
 
 - name: build bespin ui
