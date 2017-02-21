@@ -23,6 +23,8 @@
     name: /mnt/bespin_datasets
     state: directory
 
+- command: "mount {{ cinder_volume.stdout }} /mnt/bespin_datasets"
+
 - lineinfile:
     name: /etc/exports
     line: "/mnt/bespin_datasets  *(ro,sync,no_root_squash)"
