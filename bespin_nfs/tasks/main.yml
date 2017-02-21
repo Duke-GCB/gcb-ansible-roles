@@ -23,7 +23,12 @@
     name: /mnt/bespin_datasets
     state: directory
 
-- command: "mount {{ cinder_volume.stdout }} /mnt/bespin_datasets"
+- name: Mount cinder volume
+  mount:
+    name: /mnt/bespin_datasets
+    src: "{ cinder_volume.stdout }}"
+    state: mounted
+    fstype: mounted
 
 - lineinfile:
     name: /etc/exports
@@ -32,3 +37,4 @@
 - service:
     name: nfs-kernel-server
     state: restarted
+    enabled: yes

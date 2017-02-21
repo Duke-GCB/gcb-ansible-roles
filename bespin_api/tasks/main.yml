@@ -94,6 +94,31 @@
     state: touch
     path: /srv/created_lando_user
 
+- stat:
+    path: /srv/loaded_sample_data
+  register: loaded_sample_data
+
+- name: Load database with example data
+  command: python manage.py loaddata example_setup_fixture.yaml --settings=bespin.settings_prod
+  run_once: true
+  args:
+    chdir: /srv/bespin_api/
+  environment:
+    BESPIN_SECRET_KEY: "{{ bespin_api.secret_key }}"
+    BESPIN_ALLOWED_HOST: "{{ bespin_api.allowed_host }}"
+    BESPIN_DB_NAME: "{{ bespin_api.db_name }}"
+    BESPIN_DB_USER: "{{ bespin_api.db_user }}"
+    BESPIN_DB_PASSWORD: "{{ bespin_api.db_password }}"
+    BESPIN_DB_HOST: "{{ bespin_api.db_host }}"
+    BESPIN_CORS_HOST: "{{ bespin_api.cors_host }}"
+    BESPIN_STATIC_ROOT: "{{ bespin_api.static_root }}"
+  when: loaded_sample_data.stat.exists == False
+
+- file:
+    state: touch
+    path: /srv/loaded_sample_data
+
 - service:
     name: apache2
     state: restarted
+    enabled: yes

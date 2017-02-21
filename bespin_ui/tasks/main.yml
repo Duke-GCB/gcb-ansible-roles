@@ -14,6 +14,10 @@
   set_fact:
     npm_cmd: "/tmp/{{ node_version }}/bin/npm"
 
+- name: Set node_bin dir
+  set_fact:
+    node_bin: "/tmp/{{ node_version }}/bin"
+
 - name: Install apache2 packages
   apt: name={{item}}
   with_items:
@@ -37,16 +41,22 @@
     mode: 0755
 
 - name: install bower
-  command: "{{ npm_cmd }} install -g bower"
+  command: npm install -g bower
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ node_bin }}"
 
 - name: install ember-cli
-  command: "{{ npm_cmd }} install -g ember-cli"
+  command: npm install -g ember-cli
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ node_bin }}"
 
 - name: install npm packages
-  command: "{{ npm_cmd }} install"
+  command: npm install
   args:
     chdir: /src/bespin-ui
     creates: /tmp/bespin-ui/node_modules
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ node_bin }}"
 
 - name: install bower packages
   command: bower install
@@ -55,6 +65,8 @@
   args:
     chdir: /src/bespin-ui
     creates: /tmp/bespin-ui/bower_components
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ node_bin }}"
 
 - name: Setup api server config
   lineinfile:
@@ -68,6 +80,8 @@
   args:
     chdir: /src/bespin-ui
     creates: /tmp/bespin-ui/node_modules
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ node_bin }}"
 
 - name: copy ember website
   command: 'bash -c "cp -r /src/bespin-ui/dist/* /var/www/html"'
@@ -104,3 +118,4 @@
 - service:
     name: apache2
     state: restarted
+    enabled: yes
