@@ -72,6 +72,35 @@
 - name: copy ember website
   command: 'bash -c "cp -r /src/bespin-ui/dist/* /var/www/html"'
 
+- name: enable apache mod_rewrite
+  command: a2enmod rewrite
+
+- name: setup minimal document root
+  copy:
+    dest: /etc/apache2/sites-available/ember.conf
+    content: |
+      DocumentRoot /var/www
+      <Directory /var/www/>
+          Options Indexes FollowSymLinks
+          AllowOverride All
+          Require all granted
+      </Directory>
+
+- name: setup .htaccess rewrite rule
+  copy:
+    dest: /var/www/html/.htaccess
+    content: |
+      <IfModule mod_rewrite.c>
+      RewriteEngine On
+      RewriteRule ^index\.html$ - [L]
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule (.*) index.html [L]
+      </IfModule>
+
+- name: enable ember website
+  command: a2ensite ember.conf
+
 - service:
     name: apache2
     state: restarted
