@@ -26,9 +26,9 @@
 - name: Mount cinder volume
   mount:
     name: /mnt/bespin_datasets
-    src: "{ cinder_volume.stdout }}"
+    src: "{{ cinder_volume.stdout }}"
     state: mounted
-    fstype: mounted
+    fstype: ext4
 
 - lineinfile:
     name: /etc/exports
