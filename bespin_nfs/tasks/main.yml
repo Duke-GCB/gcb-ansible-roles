@@ -6,19 +6,6 @@
 - command: "bash -c 'ls /dev/disk/by-id/virtio-*'"
   register: cinder_volume
 
-- debug:
-    var: cinder_volume.stdout
-
-- stat:
-    path: /mnt/bespin_datasets
-  register: bespin_dataset_dir
-
-- debug:
-    var: bespin_dataset_dir.stat.exists
-
-- command: "mkfs.ext4 {{ cinder_volume.stdout }}"
-  when: bespin_dataset_dir.stat.exists == False
-
 - file:
     name: /mnt/bespin_datasets
     state: directory
