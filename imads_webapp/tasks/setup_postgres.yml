@@ -22,15 +22,17 @@
       log_min_duration_statement = 1500
 
 - name: Create Database container
-  docker:
+  docker_container:
     image: postgres:9.5
     name: db
-    net: "{{ imads.network }}"
+    networks:
+      - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
       - "{{ imads.data_root }}/var/lib/postgresql/data:/var/lib/postgresql/data"
-    pull: always
-    state: "{{db_state}}"
+    pull: true
+    state: started
+    restart: "{{db_restart}}"
     restart_policy: always
 
 - pause: seconds=1
