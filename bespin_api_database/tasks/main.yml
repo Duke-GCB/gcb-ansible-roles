@@ -1,35 +1,26 @@
-- name: Update apt cache
-  apt: update_cache=yes
-
-- name: Install Postgres packages
-  apt: name={{item}}
+- set_fact:
+    api_environment: "{{ api_environment|default({}) | combine(item) }}"
   with_items:
-    - postgresql-9.5
-    - libpq-dev
-    - python-psycopg2
+    - POSTGRES_USER: "{{ bespin_settings.database.username }}"
+    - POSTGRES_PASSWORD: "{{ bespin_settings.database.password }}"
+    - POSTGRES_DB: "{{ bespin_settings.database.name }}"
+    - BESPIN_SECRET_KEY: "{{ bespin_settings.api.secret_key }}"
+    - BESPIN_ALLOWED_HOST: "{{ bespin_settings.api.allowed_host }}"
+    - BESPIN_CORS_HOST: "{{ bespin_settings.api.cors_host }}"
+    - BESPIN_DB_HOST: "{{ bespin_settings.database.host }}"
+    - LANDO_DJANGO_USERNAME: "{{ bespin_settings.api.lando_username }}"
+    - LANDO_DJANGO_PASSWORD: "{{ bespin_settings.api.lando_password }}"
+    - LANDO_DJANGO_TOKEN: "{{ bespin_settings.api.lando_token }}"
 
-- name: Create our database
-  become_user: postgres
-  postgresql_db: name={{ bespin_settings.database.name }}
-
-- name: ensure user has access to database
-  become_user: postgres
-  postgresql_user:
-    db: "{{ bespin_settings.database.name }}"
-    name: "{{ bespin_settings.database.username }}"
-    password: "{{ bespin_settings.database.password }}"
-    priv: ALL
-
-- name: Allow postgres to accept external connections
-  lineinfile:
-    dest: /etc/postgresql/9.5/main/postgresql.conf
-    line: "listen_addresses = '*'"
-
-- name: Have postgres check the password for external connections
-  lineinfile:
-    dest: /etc/postgresql/9.5/main/pg_hba.conf
-    line: 'host     all             all         0.0.0.0/0          md5'
-
-- name: Restart postgres with the new settings
-  command: /usr/lib/postgresql/9.5/bin/pg_ctl -D /var/lib/postgresql/9.5/main restart
-  become_user: postgres
+- name: Create app container
+  docker_container:
+    image: postgres:9.5
+    name: bespin-db
+    env: "{{ api_environment }}"
+    volumes:
+      - /etc/external/:/etc/external/
+    ports:
+      - "5432:5432"
+    pull: true
+    state: started
+    restart_policy: always
