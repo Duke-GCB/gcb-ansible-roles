@@ -1,22 +1,22 @@
 - set_fact:
-    api_environment: "{{ api_environment|default({}) | combine(item) }}"
+    web_environment: "{{ web_environment|default({}) | combine(item) }}"
   with_items:
     - POSTGRES_USER: "{{ bespin_settings.database.username }}"
     - POSTGRES_PASSWORD: "{{ bespin_settings.database.password }}"
     - POSTGRES_DB: "{{ bespin_settings.database.name }}"
-    - BESPIN_SECRET_KEY: "{{ bespin_settings.api.secret_key }}"
-    - BESPIN_ALLOWED_HOST: "{{ bespin_settings.api.allowed_host }}"
-    - BESPIN_CORS_HOST: "{{ bespin_settings.api.cors_host }}"
+    - BESPIN_SECRET_KEY: "{{ bespin_settings.web.secret_key }}"
+    - BESPIN_ALLOWED_HOST: "{{ bespin_settings.web.allowed_host }}"
+    - BESPIN_CORS_HOST: "{{ bespin_settings.web.cors_host }}"
     - BESPIN_DB_HOST: "{{ bespin_settings.database.host }}"
-    - LANDO_DJANGO_USERNAME: "{{ bespin_settings.api.lando_username }}"
-    - LANDO_DJANGO_PASSWORD: "{{ bespin_settings.api.lando_password }}"
-    - LANDO_DJANGO_TOKEN: "{{ bespin_settings.api.lando_token }}"
+    - LANDO_DJANGO_USERNAME: "{{ bespin_settings.web.lando_username }}"
+    - LANDO_DJANGO_PASSWORD: "{{ bespin_settings.web.lando_password }}"
+    - LANDO_DJANGO_TOKEN: "{{ bespin_settings.web.lando_token }}"
 
 - name: Create app container
   docker_container:
     image: quay.io/dukegcb/bespin-web
     name: bespin-web
-    env: "{{ api_environment }}"
+    env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
     ports:

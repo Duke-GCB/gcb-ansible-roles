@@ -20,8 +20,8 @@
         user_domain_name: "{{ bespin_settings.worker_openstack.user_domain_name }}"
         project_domain_name: "{{ bespin_settings.worker_openstack.project_domain_name }}"
       bespin_api:
-        url: "{{ bespin_settings.api.url }}"
-        token: "{{ bespin_settings.api.lando_token }}"
+        url: "{{ bespin_settings.web.url }}"
+        token: "{{ bespin_settings.web.lando_token }}"
 
 - name: Update apt cache
   apt: update_cache=yes
