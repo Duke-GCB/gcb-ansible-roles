@@ -23,5 +23,6 @@
       - "80:80"
       - "443:443"
     pull: true
+    etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always

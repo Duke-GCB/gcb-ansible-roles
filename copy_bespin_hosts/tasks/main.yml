@@ -2,3 +2,11 @@
     src: /etc/hosts
     dest: /etc/hosts
     mode: 0644
+
+- command: grep 'bespin-' /etc/hosts
+  register: bespin_hosts
+
+- name: Populate bespin_hosts_list
+  set_fact:
+    bespin_hosts_list: "{{ bespin_hosts_list|default({}) | combine( {item.split()[1]: item.split()[0]} ) }}"
+  with_items: "{{bespin_hosts.stdout_lines}}"
