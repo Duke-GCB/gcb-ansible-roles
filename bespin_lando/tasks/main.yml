@@ -23,51 +23,20 @@
         url: "{{ bespin_settings.web.url }}"
         token: "{{ bespin_settings.web.lando_token }}"
 
-- name: Update apt cache
-  apt: update_cache=yes
-
-- name: Install pip
-  apt: name={{item}}
-  with_items:
-    - python-pip
-
-- pip:
-    name: git+git://github.com/Duke-GCB/lando-messaging.git
-    editable: false
-
-- pip:
-    name: git+git://github.com/Duke-GCB/lando.git
-    editable: false
-
 - name: Setup lando config
   blockinfile:
     dest: /etc/lando_config.yml
     block: "{{ lando_config }}"
     create: yes
 
-- file:
-    dest: /work
-    state: directory
-    owner: ubuntu
-    mode: 0744
-
-- name: Setup lando service
-  blockinfile:
-    dest: /etc/systemd/system/lando.service
-    create: yes
-    block: |
-      [Unit]
-      Description=Lando Service
-      After=multi-user.target
-      [Service]
-      Type=idle
-      ExecStart=/usr/local/bin/lando
-      WorkingDirectory=/work
-      User=ubuntu
-      [Install]
-      WantedBy=multi-user.target
-
-- service:
-    name: lando
+- name: Create app container
+  docker_container:
+    image: quay.io/dukegcb/bespin-lando
+    name: bespin-lando
+    volumes:
+      - /etc/external/:/etc/external/
+      - /etc/lando_config.yml:/etc/lando_config.yml
+    pull: true
+    etc_hosts: "{{ bespin_hosts_list }}"
     state: started
-    enabled: yes
+    restart_policy: always
