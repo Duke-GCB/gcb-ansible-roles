@@ -11,8 +11,8 @@
 - name: register to satellite
   redhat_subscription:
     state: present
-    org_id: DHTS
-    activationkey: key-gcb-rhel6-64bit-prod
+    org_id: "{{ redhat_reg.org_id }}"
+    activationkey: "{{ redhat_reg.activationkey }}"
   tags:
     - rhnregister
 

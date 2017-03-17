@@ -31,4 +31,4 @@ Banner /etc/issue.net
 # override default of no subsystems
 Subsystem	sftp	/usr/libexec/openssh/sftp-server
 
-AllowGroups root administrators gcbdeploy dhts_admins
+AllowGroups {{ ssh_groups }}
