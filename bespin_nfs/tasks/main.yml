@@ -1,0 +1,27 @@
+- apt:
+    name: nfs-kernel-server
+    update_cache: yes
+    state: present
+
+- command: "bash -c 'ls /dev/disk/by-id/virtio-*'"
+  register: cinder_volume
+
+- file:
+    name: /mnt/bespin_datasets
+    state: directory
+
+- name: Mount cinder volume
+  mount:
+    name: /mnt/bespin_datasets
+    src: "{{ cinder_volume.stdout }}"
+    state: mounted
+    fstype: ext4
+
+- lineinfile:
+    name: /etc/exports
+    line: "/mnt/bespin_datasets  *(ro,sync,no_root_squash)"
+
+- service:
+    name: nfs-kernel-server
+    state: restarted
+    enabled: yes

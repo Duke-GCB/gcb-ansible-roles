@@ -1,0 +1,19 @@
+- set_fact:
+    db_environment: "{{ db_environment|default({}) | combine(item) }}"
+  with_items:
+    - POSTGRES_USER: "{{ bespin_settings.database.username }}"
+    - POSTGRES_PASSWORD: "{{ bespin_settings.database.password }}"
+    - POSTGRES_DB: "{{ bespin_settings.database.name }}"
+
+- name: Create app container
+  docker_container:
+    image: postgres:9.5
+    name: bespin-db
+    env: "{{ db_environment }}"
+    volumes:
+      - /etc/external/:/etc/external/
+    ports:
+      - "5432:5432"
+    pull: true
+    state: started
+    restart_policy: always
