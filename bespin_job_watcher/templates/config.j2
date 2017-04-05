@@ -1,0 +1,22 @@
+{
+  "listenOn": {
+    "host": "0.0.0.0",
+    "port": 80
+    {# when we have a cert
+      "port": 443,
+      "key": "/etc/external/ssl/privkey.pem",
+      "cert": "/etc/external/ssl/cacert.pem"
+    #}
+  },
+  "rabbit": {
+    "protocol": "amqp",
+    "exchange": "job_status",
+    "user": "{{ bespin_settings.rabbit.username }}",
+    "password": "{{ bespin_settings.rabbit.password }}",
+    "host": "bespin-rabbit",
+    "port": 5672
+  },
+  "bespinapi": {
+    "url": "{{ bespin_settings.web.url }}",
+  }
+}

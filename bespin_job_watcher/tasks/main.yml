@@ -1,0 +1,33 @@
+- name: Make SSL directory
+  file: path={{ bespin_settings.job_watcher.ssl_dir }} state=directory
+  when: "{{ bespin_settings.job_watcher.ssl_dir is defined }}"
+
+- name: Place SSL certificate
+  copy: content="{{ bespin_settings.job_watcher.ssl_cert }}"
+        dest="{{ bespin_settings.job_watcher.ssl_dir }}/{{ bespin_settings.job_watcher.ssl_cert_file }}"
+        mode=400
+  when: "{{ bespin_settings.job_watcher.ssl_cert_file is defined }}"
+
+- name: Place SSL private key
+  copy: content="{{ bespin_settings.job_watcher.ssl_key }}"
+        dest="{{ bespin_settings.job_watcher.ssl_dir }}/{{ bespin_settings.job_watcher.ssl_key_file }}"
+        mode=400
+  when: "{{ bespin_settings.job_watcher.ssl_key_file is defined }}"
+
+- name: Create application configuration file
+  template: src=config.j2 dest=/usr/src/app/config.json mode=400
+
+- name: Create bespin-job-watcher container
+  docker_container:
+    image: quay.io/dukegcb/bespin-job-watcher
+    name: bespin-job-watcher
+    volumes:
+      - /etc/external/:/etc/external/
+      - /usr/src/app/config.json:/usr/src/app/config.json
+    ports:
+      - "80:80"
+      - "443:443"
+    pull: true
+    etc_hosts: "{{ bespin_hosts_list }}"
+    state: started
+    restart_policy: always
