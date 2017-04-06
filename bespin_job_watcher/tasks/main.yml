@@ -1,5 +1,5 @@
 - name: Make SSL directory
-  file: path={{ bespin_settings.job_watcher.ssl_dir }} state=directory
+  file: path="{{ bespin_settings.job_watcher.ssl_dir }}" state=directory
   when: "{{ bespin_settings.job_watcher.ssl_dir is defined }}"
 
 - name: Place SSL certificate
@@ -14,6 +14,11 @@
         mode=400
   when: "{{ bespin_settings.job_watcher.ssl_key_file is defined }}"
 
+- name: Create directory for config
+  file:
+    path: /usr/src/app
+    state: directory
+
 - name: Create application configuration file
   template: src=config.j2 dest=/usr/src/app/config.json mode=400
 
@@ -27,6 +32,7 @@
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     pull: true
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
