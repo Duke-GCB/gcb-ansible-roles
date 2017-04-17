@@ -9,7 +9,7 @@
     env: "{{ imads.env }}"
     command: python vacuum.py 2880
     volumes:
-      - /etc/external/:/etc/external/
+      - "{{ imads.data_root }}/etc/external/:/etc/external/"
       - "{{ imads.data_root }}/pred_data:/tmp/pred_data"
     pull: true
     state: started
