@@ -1,39 +1,62 @@
 # Setup postgres with various settings.
 
-- name: Setup loading postgres configuration
-  when: "'{{db_config}}' == 'load'"
-  blockinfile:
-    dest: "{{ imads.data_root }}/var/lib/postgresql/data/postgresql.conf"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    content: |
-      maintenance_work_mem = 2048MB
-      fsync = off
+# Determine if the database has been loaded
 
-- name: Setup production postgres configuration (1/4 RAM shared_buffers, memory for sorting)
-  when: "'{{db_config}}' == 'production'"
-  blockinfile:
-    dest: "{{ imads.data_root }}/var/lib/postgresql/data/postgresql.conf"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    content: |
-      shared_buffers = 4GB
-      work_mem = 48MB
-      logging_collector = on
-      log_directory = 'pg_log'
-      log_min_duration_statement = 1500
+- stat: path="{{ imads.data_root }}/pred_data/loaded.txt"
+  register: pred_data_loaded
 
-- name: Create Database container
+- name: Create Database container in loading state
+  when: pred_data_loaded.stat.isreg is not defined
   docker_container:
     image: postgres:9.5
     name: db
+    command: "postgres -c maintenance_work_mem=2048MB -c fsync=off"
     networks:
       - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
-      - "{{ imads.data_root }}/var/lib/postgresql/data:/var/lib/postgresql/data"
+      - "{{ imads.data_root }}/var/lib/postgresql/data/postgresql:/var/lib/postgresql/data"
     pull: true
     state: started
-    restart: "{{db_restart}}"
     restart_policy: always
 
-- pause: seconds=1
-  when: "'{{db_config}}' == 'restart'"
+# Populate database
+
+- name: Initial download and load database with prediction data
+  when: pred_data_loaded.stat.isreg is not defined
+  docker_container:
+    name: load
+    image: dukegcb/imads
+    networks:
+      - name: "{{ imads.network }}"
+    env: "{{ imads.env }}"
+    command: python load.py download
+    detach: false
+    volumes:
+      - "{{ imads.data_root }}/etc/external/:/etc/external/"
+      - "{{ imads.data_root }}/pred_data:/tmp/pred_data"
+    pull: true
+
+# Wait for loading to finish
+- name: Wait for loading to finish
+  when: pred_data_loaded.stat.isreg is not defined
+  shell: "docker wait load"
+
+- name: Create finished loading text file
+  when: pred_data_loaded.stat.isreg is not defined
+  file: path="{{ imads.data_root }}/pred_data/loaded.txt" state=touch
+
+# Setup production database settings
+- name: Create Database container in production state (1/4 RAM shared_buffers, memory for sorting)
+  docker_container:
+    image: postgres:9.5
+    name: db
+    command: "postgres -c shared_buffers=4GB -c work_mem=48MB -c logging_collector=on -c log_directory='pg_log' -c log_min_duration_statement=1500"
+    networks:
+      - name: "{{ imads.network }}"
+    env: "{{ imads.env }}"
+    volumes:
+      - "{{ imads.data_root }}/var/lib/postgresql/data/postgresql:/var/lib/postgresql/data"
+    pull: true
+    state: started
+    restart_policy: always

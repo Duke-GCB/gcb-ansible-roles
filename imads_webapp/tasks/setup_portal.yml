@@ -8,7 +8,7 @@
       - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
-      - /etc/external/:/etc/external/
+      - "{{ imads.data_root }}/etc/external/ssl/:/etc/external/ssl/"
       - "{{ imads.data_root }}/pred_data:/tmp/pred_data"
     ports:
       - "80:80"
