@@ -1,0 +1,13 @@
+# From https://github.com/jupyterhub/jupyterhub/wiki/Run-jupyterhub-as-a-system-service
+
+[Unit]
+Description=Jupyterhub
+After=network-online.target
+
+[Service]
+User=jupyter
+ExecStart=/usr/local/bin/jupyterhub
+WorkingDirectory=/etc/jupyterhub
+
+[Install]
+WantedBy=multi-user.target

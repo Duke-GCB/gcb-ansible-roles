@@ -1,0 +1,143 @@
+---
+# file: roles/jupyter/tasks/main.yml
+# requires python3
+
+####################################
+# Install base dependencies
+####################################
+
+
+- name: Install Python 3, Node, and NPM
+  apt: name={{item}} state=present update_cache=yes
+  with_items:
+  - python3
+  - python3
+  - python3-setuptools
+  - python3-dev
+  - python3-pip
+  - sudo
+  - npm
+  - nodejs-legacy
+  - git
+  tags: jupyter-deps
+
+- name: install npm package configurable-http-proxy
+  npm: name=configurable-http-proxy global=yes state=present
+  tags: jupyter-deps
+
+####################################
+# Configure user/group on system
+####################################
+
+- name: add jupyter group
+  group: name=jupyter state=present
+  tags: jupyter-user
+
+# Password must be encrypted
+- name: add jupyter user
+  user: name=jupyter state=present groups=jupyter,shadow password="{{jupyterpw}}"
+  tags: jupyter-user
+
+####################################
+# Place folder and sudoers config
+####################################
+
+- name: create jupyterhub folder in etc
+  file: path=/etc/jupyterhub state=directory mode=0755 owner=jupyter group=jupyter
+  tags: jupyter-files
+
+- name: copy jupyterhub sudospawner sudo config
+  copy: src=sudo_jupyter dest=/etc/sudoers.d/jupyter mode=0440 owner=root group=root
+  tags: jupyter-sudospawner
+  when: spawner == 'sudospawner'
+
+####################################
+# Install jupyter from pip
+####################################
+
+- name: install jupyter, jupyterhub via pip3
+  pip: executable=pip3 name={{item}} extra_args='--upgrade'
+  tags: jupyter-deps
+  with_items:
+  - jupyter
+  - jupyterhub
+
+- name: install sudospawner via pip3
+  pip: executable=pip3 name="git+https://github.com/jupyter/sudospawner#egg=sudospawner" extra_args='--upgrade'
+  tags: jupyter-sudospawner
+  when: spawner == 'sudospawner'
+
+####################################
+# Generate/place config file
+####################################
+
+- name: Check to see if config file exists
+  stat: path=/etc/jupyterhub/jupyterhub_config.py
+  register: config_exists
+  tags: jupyter-config
+
+- name: configure jupyterhub
+  command: /usr/local/bin/jupyterhub --generate-config chdir=/etc/jupyterhub/ creates=/etc/jupyterhub/jupyterhub_config.py
+  when: config_exists.stat.exists == False
+  tags: jupyter-config
+
+####################################
+# Update config file
+####################################
+
+- name: set jupyterhub admin user
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.Authenticator.admin_users = {'jupyter'}"
+  tags: jupyter-config
+
+- name: set jupyterhub to create users
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.LocalAuthenticator.create_system_users = True"
+  tags: jupyter-config
+
+- name: set hub IP address
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.hub_ip = '{{ansible_default_ipv4.address}}'"
+  tags: jupyter-config
+
+- name: set IP address
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ip = '{{ansible_default_ipv4.address}}'"
+  tags: jupyter-config
+
+- name: set proxy IP address
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.proxy_api_ip = '{{ansible_default_ipv4.address}}'"
+  tags: jupyter-config
+
+- name: set spawner
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'"
+  tags: jupyter-config, jupyter-sudospawner
+  when: spawner == 'sudospawner'
+
+####################################
+# Init script for starting service
+####################################
+
+- name: install jupyterhub systemd service
+  copy: src=jupyterhub.service dest=/lib/systemd/system/jupyterhub.service mode=755 owner=root group=root
+  tags: jupyter-service
+
+- name: Ensure hostname is in /etc/hosts file
+  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ansible_default_ipv4.address}}  {{ansible_hostname}}"
+  tags: jupyter-config
+
+- name: Place SSL private key
+  copy: src=../../../files/jupyterhub.key dest=/etc/jupyterhub/server.key
+  tags: jupyter-ssl
+
+- name: Place SSL Certificate
+  copy: src=../../../files/jupyterhub.crt dest=/etc/jupyterhub/server.crt
+  tags: jupyter-ssl
+
+- name: Set SSL Certificate
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ssl_cert = '/etc/jupyterhub/server.crt'"
+  tags: jupyter-ssl
+
+- name: Set SSL private key
+  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ssl_key = '/etc/jupyterhub/server.key'"
+  tags: jupyter-ssl
+
+- name: start jupyterhub systemd service
+  systemd: name=jupyterhub enabled=yes state=started
+  tags: jupyter-service
