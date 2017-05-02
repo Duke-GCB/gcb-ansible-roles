@@ -63,7 +63,7 @@
   - jupyterhub
 
 - name: install sudospawner via pip3
-  pip: executable=pip3 name="git+https://github.com/jupyter/sudospawner#egg=sudospawner" extra_args='--upgrade'
+  pip: executable=pip3 name=sudospawner
   tags: jupyter-sudospawner
   when: spawner == 'sudospawner'
 
