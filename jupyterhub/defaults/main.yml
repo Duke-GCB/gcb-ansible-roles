@@ -1,2 +1,3 @@
 ---
+spawner: sudo
 docker_image: "jupyterhub/singleuser"
