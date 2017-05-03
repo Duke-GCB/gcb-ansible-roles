@@ -1,2 +1,2 @@
 ---
-spawner: sudospawner
+spawner: docker
