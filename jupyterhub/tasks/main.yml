@@ -21,6 +21,14 @@
   - git
   tags: jupyter-deps
 
+- name: Install Docker and Docker-py
+  apt: name={{item}} state=present update_cache=yes
+  with_items:
+  - docker.io
+  - python3-docker
+  when: spawner == 'docker'
+  tags: jupyter-deps
+
 - name: install npm package configurable-http-proxy
   npm: name=configurable-http-proxy global=yes state=present
   tags: jupyter-deps
@@ -33,10 +41,25 @@
   group: name=jupyter state=present
   tags: jupyter-user
 
-# Password must be encrypted
-- name: add jupyter user
-  user: name=jupyter state=present groups=jupyter,shadow password="{{jupyterpw}}"
+- name: add jupyter user, set encrypted password
+  user: name=jupyter state=present password="{{jupyterpw}}"
   tags: jupyter-user
+
+- name: add docker group
+  group: name=docker state=present
+  when: spawner == 'docker'
+  tags: jupyter-user
+
+- name: put jupyter user in docker-related groups
+  user: name=jupyter groups=docker,jupyter,shadow
+  when: spawner == 'docker'
+  tags: jupyter-user
+
+- name: put jupyter user in sudospawner-related groups
+  user: name=jupyter groups=jupyter,shadow
+  when: spawner == 'sudo'
+  tags: jupyter-user
+
 
 ####################################
 # Place folder and sudoers config
@@ -49,7 +72,13 @@
 - name: copy jupyterhub sudospawner sudo config
   copy: src=sudo_jupyter dest=/etc/sudoers.d/jupyter mode=0440 owner=root group=root
   tags: jupyter-sudospawner
-  when: spawner == 'sudospawner'
+  when: spawner == 'sudo'
+
+####################################
+# Pull docker image
+####################################
+- name: pull Docker image
+  docker_image: name="{{docker_image}}"
 
 ####################################
 # Install jupyter from pip
@@ -65,7 +94,12 @@
 - name: install sudospawner via pip3
   pip: executable=pip3 name=sudospawner
   tags: jupyter-sudospawner
-  when: spawner == 'sudospawner'
+  when: spawner == 'sudo'
+
+- name: install dockerspawner via pip3
+  pip: executable=pip3 name=dockerspawner
+  tags: jupyter-dockerspawner
+  when: spawner == 'docker'
 
 ####################################
 # Generate/place config file
@@ -105,10 +139,21 @@
   lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.proxy_api_ip = '{{ansible_default_ipv4.address}}'"
   tags: jupyter-config
 
-- name: set spawner
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'"
+- name: set spawner to sudospawner
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.spawner_class ='
+    line: "c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'"
   tags: jupyter-config, jupyter-sudospawner
-  when: spawner == 'sudospawner'
+  when: spawner == 'sudo'
+
+- name: set spawner to dockerspawner
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.spawner_class ='
+    line: "c.JupyterHub.spawner_class = 'dockerspawner.DockerSpawner'"
+  tags: jupyter-config, jupyter-dockerspawner
+  when: spawner == 'docker'
 
 ####################################
 # Init script for starting service
