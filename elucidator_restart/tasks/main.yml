@@ -1,0 +1,58 @@
+- name: Make directory for external files
+  file: path=/etc/external state=directory
+
+- name: Place SP certificate
+  copy: content="{{ elucidator_config.shibboleth.cert }}"
+        dest=/etc/external/shibboleth/sp-cert.pm"
+        mode=400
+
+- name: Place SP key
+  copy: content="{{ elucidator_config.shibboleth.key }}"
+        dest=/etc/external/shibboleth/sp-key.pm
+        mode=400
+
+- name: Place SSL Certificate
+  copy: content="{{ elucidator_config.ssl.cert }}"
+        dest=/etc/external/ssl/restart_server.cer
+        mode=400
+
+- name: Place SSL Interm Certificate
+  copy: content="{{ elucidator_config.ssl.interm_cert }}"
+        dest=/etc/external/ssl/restart_server_interm.cer
+        mode=400
+
+- name: Place SSL Key
+  copy: content="{{ elucidator_config.ssl.key }}"
+        dest=/etc/external/ssl/restart_server.key
+        mode=400
+
+- name: Place SSH Public Key
+  copy: content="{{ elucidator_config.ssh.id_rsa_pub }}"
+        dest=/etc/external/ssl/id_rsa.pub
+        mode=400
+
+- name: Place SSH Private Key
+  copy: content="{{ elucidator_config.ssh.id_rsa }}"
+        dest=/etc/external/ssl/id_rsa
+        mode=400
+
+- name: Place SSH known_hosts
+  copy: content="{{ elucidator_config.ssh.known_hosts }}"
+        dest=/etc/external/ssl/known_hosts
+        mode=400
+
+- name: Create app container
+  docker_container:
+    image: quay.io/dukegcb/elucidator-restart:docker
+    name: web
+    env:
+      ELUCIDATOR_HOST: {{ elucidator_config.target_host}}
+    volumes:
+      - /etc/external/:/etc/external/
+      - /etc/external/ssh:/usr/share/httpd/.ssh
+    ports:
+      - "80:80"
+      - "443:443"
+    pull: true
+    state: started
+    restart_policy: always
