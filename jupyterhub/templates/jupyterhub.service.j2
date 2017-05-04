@@ -6,6 +6,9 @@ After=network-online.target
 
 [Service]
 User=jupyter
+{% if authenticator == 'gitlab_oauth' %}
+Environment=GITLAB_HOST={{ gitlab.host }}
+{% endif %}
 ExecStart=/usr/local/bin/jupyterhub
 WorkingDirectory=/etc/jupyterhub
 

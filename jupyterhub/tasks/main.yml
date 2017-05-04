@@ -120,23 +120,45 @@
 ####################################
 
 - name: set jupyterhub admin user
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.Authenticator.admin_users = {'jupyter'}"
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.Authenticator\.admin_users ='
+    line: "c.Authenticator.admin_users = {'jupyter'}"
   tags: jupyter-config
 
 - name: set jupyterhub to create users
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.LocalAuthenticator.create_system_users = True"
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.LocalAuthenticator\.create_system_users ='
+    line: "c.LocalAuthenticator.create_system_users = True"
   tags: jupyter-config
 
 - name: set hub IP address
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.hub_ip = '{{ansible_default_ipv4.address}}'"
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.hub_ip ='
+    line: "c.JupyterHub.hub_ip = '{{ip}}'"
   tags: jupyter-config
 
 - name: set IP address
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ip = '{{ansible_default_ipv4.address}}'"
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.ip ='
+    line: "c.JupyterHub.ip = '{{ip}}'"
+  tags: jupyter-config
+
+- name: set port
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.port ='
+    line: "c.JupyterHub.port = '{{port}}'"
   tags: jupyter-config
 
 - name: set proxy IP address
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.proxy_api_ip = '{{ansible_default_ipv4.address}}'"
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.proxy_api_ip ='
+    line: "c.JupyterHub.proxy_api_ip = '{{ ip }}'"
   tags: jupyter-config
 
 - name: set spawner to sudospawner
@@ -155,16 +177,17 @@
   tags: jupyter-config, jupyter-dockerspawner
   when: spawner == 'docker'
 
+
 ####################################
 # Init script for starting service
 ####################################
 
 - name: install jupyterhub systemd service
-  copy: src=jupyterhub.service dest=/lib/systemd/system/jupyterhub.service mode=755 owner=root group=root
+  template: src=jupyterhub.service.j2 dest=/lib/systemd/system/jupyterhub.service mode=755 owner=root group=root
   tags: jupyter-service
 
 - name: Ensure hostname is in /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ansible_default_ipv4.address}}  {{ansible_hostname}}"
+  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ip}}  {{ansible_hostname}}"
   tags: jupyter-config
 
 - name: Place SSL private key
@@ -176,12 +199,59 @@
   tags: jupyter-ssl
 
 - name: Set SSL Certificate
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ssl_cert = '/etc/jupyterhub/server.crt'"
+  lineinfile:
+    regexp: '^c\.JupyterHub\.ssl_cert ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.ssl_cert = '/etc/jupyterhub/server.crt'"
   tags: jupyter-ssl
 
 - name: Set SSL private key
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ssl_key = '/etc/jupyterhub/server.key'"
+  lineinfile:
+    regexp: '^c\.JupyterHub\.ssl_key ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.ssl_key = '/etc/jupyterhub/server.key'"
   tags: jupyter-ssl
+
+### OAuth
+
+- name: Install jupyterhub oauthenticator
+  pip:
+    executable: pip3
+    name: oauthenticator
+  tags: jupyter-oauth
+  when: authenticator == 'gitlab_oauth'
+
+- name: Set GitLab callback url
+  lineinfile:
+    regexp: '^c\.GitLabOAuthenticator\.oauth_callback_url ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.GitLabOAuthenticator.oauth_callback_url = '{{ gitlab.callback_url}}'"
+  tags: jupyter-oauth-gitlab
+  when: authenticator == 'gitlab_oauth'
+
+- name: Set GitLab client id
+  lineinfile:
+    regexp: '^c\.GitLabOAuthenticator\.client_id ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.GitLabOAuthenticator.client_id = '{{ gitlab.client_id}}'"
+  tags: jupyter-oauth-gitlab
+  when: authenticator == 'gitlab_oauth'
+
+- name: Set GitLab client secret
+  lineinfile:
+    regexp: '^c\.GitLabOAuthenticator\.client_secret ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.GitLabOAuthenticator.client_secret = '{{ gitlab.client_secret}}'"
+  tags: jupyter-oauth-gitlab
+  when: authenticator == 'gitlab_oauth'
+
+- name: Set GitLab authenticator
+  lineinfile:
+    regexp: '^c\.JupyterHub\.authenticator_class ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.authenticator_class = 'oauthenticator.gitlab.GitLabOAuthenticator'"
+  tags: jupyter-oauth-gitlab
+  when: authenticator == 'gitlab_oauth'
 
 # Always reload the daemon and restart the service, since the underlying config easily changes
 - name: start jupyterhub systemd service
