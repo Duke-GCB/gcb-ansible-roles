@@ -151,7 +151,7 @@
   lineinfile:
     path: '/etc/jupyterhub/jupyterhub_config.py'
     regexp: '^c\.JupyterHub\.port ='
-    line: "c.JupyterHub.port = '{{port}}'"
+    line: "c.JupyterHub.port = {{port}}"
   tags: jupyter-config
 
 - name: set proxy IP address

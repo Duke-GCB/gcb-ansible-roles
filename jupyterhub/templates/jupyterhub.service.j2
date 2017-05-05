@@ -5,7 +5,6 @@ Description=Jupyterhub
 After=network-online.target
 
 [Service]
-User=jupyter
 {% if authenticator == 'gitlab_oauth' %}
 Environment=GITLAB_HOST={{ gitlab.host }}
 {% endif %}
