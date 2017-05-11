@@ -28,7 +28,6 @@
     - RABBIT_PASSWORD: "{{ bespin_settings.rabbit.password }}"
     - RABBIT_QUEUENAME: "{{ bespin_settings.rabbit.listen_queue }}"
 
-
 - name: Create app container
   docker_container:
     image: quay.io/dukegcb/bespin-web
