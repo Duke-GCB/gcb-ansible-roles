@@ -11,6 +11,10 @@
     - LANDO_DJANGO_USERNAME: "{{ bespin_settings.web.lando_username }}"
     - LANDO_DJANGO_PASSWORD: "{{ bespin_settings.web.lando_password }}"
     - LANDO_DJANGO_TOKEN: "{{ bespin_settings.web.lando_token }}"
+    - RABBIT_HOST: "{{ bespin_settings.rabbit.host }}"
+    - RABBIT_USERNAME: "{{ bespin_settings.rabbit.username }}"
+    - RABBIT_PASSWORD: "{{ bespin_settings.rabbit.password }}"
+    - RABBIT_QUEUENAME: "{{ bespin_settings.rabbit.listen_queue }}"
 
 - name: Create app container
   docker_container:
