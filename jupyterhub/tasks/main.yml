@@ -140,6 +140,11 @@
   tags: jupyter-dockerspawner
   when: spawner == 'docker'
 
+- name: install slurm (batchspawner) via pip and git
+  pip: executable="{{ pip_executable }}" name=git+https://github.com/jupyterhub/batchspawner.git#egg=batchspawner
+  tags: jupyter-slurmspawner
+  when: spawner == 'slurm'
+
 ####################################
 # Generate/place config file
 ####################################
@@ -216,6 +221,36 @@
   tags: jupyter-config, jupyter-dockerspawner
   when: spawner == 'docker'
 
+- name: set spawner to slurm batchspawner
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.spawner_class ='
+    line: "c.JupyterHub.spawner_class = 'batchspawner.SlurmSpawner'"
+  tags: jupyter-config, jupyter-slurmspawner
+  when: spawner == 'slurm'
+
+- name: Configure batchspawner
+  blockinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    marker: "# {mark} ANSIBLE MANAGED SLURM CONFIG"
+    block: |
+      c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
+      c.BatchSpawnerBase.req_runtime = '60'
+      c.BatchSpawnerBase.req_memory = '4096'
+      c.SlurmSpawner.batch_script = """#!/bin/bash
+      #SBATCH --partition={partition}
+      #SBATCH --time={runtime}
+      #SBATCH --output={homedir}/jupyterhub_slurmspawner_%j.log
+      #SBATCH --job-name=spawner-jupyterhub
+      #SBATCH --workdir={homedir}
+      #SBATCH --mem={memory}
+      #SBATCH --export=LANG,JUPYTERHUB_API_TOKEN,JPY_API_TOKEN,USER,HOME,SHELL
+      #SBATCH --uid={username}
+      #SBATCH --get-user-env=L
+      #SBATCH {options}
+      which jupyterhub-singleuser
+      {cmd}
+      """
 
 ####################################
 # Init script for starting service
@@ -266,28 +301,14 @@
   tags: jupyter-oauth
   when: authenticator == 'gitlab_oauth'
 
-- name: Set GitLab callback url
-  lineinfile:
-    regexp: '^c\.GitLabOAuthenticator\.oauth_callback_url ='
+- name: Set GitLab info
+  blockinfile:
     path: '/etc/jupyterhub/jupyterhub_config.py'
-    line: "c.GitLabOAuthenticator.oauth_callback_url = '{{ gitlab.callback_url}}'"
-  tags: jupyter-oauth-gitlab
-  when: authenticator == 'gitlab_oauth'
-
-- name: Set GitLab client id
-  lineinfile:
-    regexp: '^c\.GitLabOAuthenticator\.client_id ='
-    path: '/etc/jupyterhub/jupyterhub_config.py'
-    line: "c.GitLabOAuthenticator.client_id = '{{ gitlab.client_id}}'"
-  tags: jupyter-oauth-gitlab
-  when: authenticator == 'gitlab_oauth'
-
-- name: Set GitLab client secret
-  lineinfile:
-    regexp: '^c\.GitLabOAuthenticator\.client_secret ='
-    path: '/etc/jupyterhub/jupyterhub_config.py'
-    line: "c.GitLabOAuthenticator.client_secret = '{{ gitlab.client_secret}}'"
-  tags: jupyter-oauth-gitlab
+    marker: "# {mark} ANSIBLE MANAGED OAUTH CONFIG"
+    block: |
+      c.GitLabOAuthenticator.oauth_callback_url = '{{ gitlab.callback_url }}'
+      c.GitLabOAuthenticator.client_id = '{{ gitlab.client_id }}'
+      c.GitLabOAuthenticator.client_secret = '{{ gitlab.client_secret }}'
   when: authenticator == 'gitlab_oauth'
 
 - name: Set GitLab authenticator
@@ -305,6 +326,6 @@
   when: ansible_os_family == 'Debian'
 
 - name: start jupyterhub init script
-  service: name=jupyterhub enabled=yes state=started
+  service: name=jupyterhub enabled=yes state=restarted
   tags: jupyter-service
   when: ansible_os_family == 'RedHat'

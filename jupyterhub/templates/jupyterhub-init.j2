@@ -24,7 +24,7 @@ export GITLAB_HOST={{ gitlab.host }}
 
 start() {
     cd /etc/jupyterhub
-    daemon "$DAEMON $DAEMON_ARGS" &
+    daemon "$DAEMON $DAEMON_ARGS" > /var/log/jupyterhub.log 2>&1 &
 }
 
 stop() {

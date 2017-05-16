@@ -1,3 +1,4 @@
 ---
 spawner: sudo
 docker_image: "jupyterhub/singleuser"
+slurm_partition: "all"
