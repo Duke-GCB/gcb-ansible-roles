@@ -9,8 +9,8 @@
 
 - name: Install Python 3, Node, and NPM
   apt: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'Debian'
   with_items:
-  - python3
   - python3
   - python3-setuptools
   - python3-dev
@@ -21,8 +21,32 @@
   - git
   tags: jupyter-deps
 
+- name: Install Python 3, Node, and NPM
+  yum: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'RedHat'
+  with_items:
+  - python36u
+  - python36u-setuptools
+  - python36u-devel
+  - python36u-pip
+  - sudo
+  - npm
+  - nodejs
+  - git
+  tags: jupyter-deps
+
 - name: Install Docker and Docker-py
   apt: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'Debian'
+  with_items:
+  - docker.io
+  - python3-docker
+  when: spawner == 'docker'
+  tags: jupyter-deps
+
+- name: Install Docker and Docker-py
+  yum: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'RedHat'
   with_items:
   - docker.io
   - python3-docker
@@ -57,9 +81,13 @@
 
 - name: put jupyter user in sudospawner-related groups
   user: name=jupyter groups=jupyter,shadow
-  when: spawner == 'sudo'
+  when: spawner == 'sudo' and ansible_os_family == 'Debian'
   tags: jupyter-user
 
+- name: put jupyter user in sudospawner-related groups
+  user: name=jupyter groups=jupyter
+  when: spawner == 'sudo' and ansible_os_family == 'RedHat'
+  tags: jupyter-user
 
 ####################################
 # Place folder and sudoers config
@@ -79,25 +107,36 @@
 ####################################
 - name: pull Docker image
   docker_image: name="{{docker_image}}"
+  when: spawner == 'docker'
 
 ####################################
 # Install jupyter from pip
 ####################################
+- name: set pip to use
+  set_fact:
+    pip_executable: "/usr/bin/pip3.6"
+  when: ansible_os_family == 'RedHat'
 
-- name: install jupyter, jupyterhub via pip3
-  pip: executable=pip3 name={{item}} extra_args='--upgrade'
+- name: set pip to use
+  set_fact:
+    pip_executable: "/usr/bin/pip3"
+  when: ansible_os_family == 'Debian'
+
+
+- name: install jupyter, jupyterhub via pip
+  pip: executable="{{ pip_executable }}" name={{item}} extra_args='--upgrade'
   tags: jupyter-deps
   with_items:
   - jupyter
   - jupyterhub
 
-- name: install sudospawner via pip3
-  pip: executable=pip3 name=sudospawner
+- name: install sudospawner via pip
+  pip: executable={{pip_executable}} name=sudospawner
   tags: jupyter-sudospawner
   when: spawner == 'sudo'
 
-- name: install dockerspawner via pip3
-  pip: executable=pip3 name=dockerspawner
+- name: install dockerspawner via pip
+  pip: executable="{{ pip_executable }}" name=dockerspawner
   tags: jupyter-dockerspawner
   when: spawner == 'docker'
 
@@ -111,7 +150,7 @@
   tags: jupyter-config
 
 - name: configure jupyterhub
-  command: /usr/local/bin/jupyterhub --generate-config chdir=/etc/jupyterhub/ creates=/etc/jupyterhub/jupyterhub_config.py
+  command: jupyterhub --generate-config chdir=/etc/jupyterhub/ creates=/etc/jupyterhub/jupyterhub_config.py
   when: config_exists.stat.exists == False
   tags: jupyter-config
 
@@ -185,6 +224,12 @@
 - name: install jupyterhub systemd service
   template: src=jupyterhub.service.j2 dest=/lib/systemd/system/jupyterhub.service mode=755 owner=root group=root
   tags: jupyter-service
+  when: ansible_os_family == 'Debian'
+
+- name: Install jupyterhub init script
+  template: src=jupyterhub-init.j2 dest=/etc/init.d/jupyterhub mode=755 owner=root group=root
+  tags: jupyter-service
+  when: ansible_os_family == 'RedHat'
 
 - name: Ensure hostname is in /etc/hosts file
   lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ip}}  {{ansible_hostname}}"
@@ -216,7 +261,7 @@
 
 - name: Install jupyterhub oauthenticator
   pip:
-    executable: pip3
+    executable: "{{ pip_executable }}"
     name: oauthenticator
   tags: jupyter-oauth
   when: authenticator == 'gitlab_oauth'
@@ -257,3 +302,9 @@
 - name: start jupyterhub systemd service
   systemd: name=jupyterhub enabled=yes daemon_reload=yes state=restarted
   tags: jupyter-service
+  when: ansible_os_family == 'Debian'
+
+- name: start jupyterhub init script
+  service: name=jupyterhub enabled=yes state=started
+  tags: jupyter-service
+  when: ansible_os_family == 'RedHat'
