@@ -170,12 +170,37 @@
     line: "c.Authenticator.admin_users = {'jupyter'}"
   tags: jupyter-config
 
-- name: set jupyterhub to create users
+- name: Set Local PAM authenticator
+  lineinfile:
+    regexp: '^c\.JupyterHub\.authenticator_class ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.authenticator_class = 'jupyterhub.auth.PAMAuthenticator'"
+  tags: jupyter-local-auth
+  when: authenticator == 'pam'
+
+- name: set jupyterhub to not create system users when using PAM auth
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.LocalAuthenticator\.create_system_users ='
+    line: "c.LocalAuthenticator.create_system_users = False"
+  tags: jupyter-config
+  when: authenticator == 'pam'
+
+- name: set jupyterhub to create system users when not using PAM auth
   lineinfile:
     path: '/etc/jupyterhub/jupyterhub_config.py'
     regexp: '^c\.LocalAuthenticator\.create_system_users ='
     line: "c.LocalAuthenticator.create_system_users = True"
   tags: jupyter-config
+  when: authenticator != 'pam'
+
+- name: Set whitelist users
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.Authenticator\.whitelist ='
+    line: "c.Authenticator.whitelist = {{ whitelist_users }}"
+  tags: jupyter-config
+  when: authenticator == 'pam'
 
 - name: set hub IP address
   lineinfile:
@@ -237,20 +262,7 @@
       c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
       c.BatchSpawnerBase.req_runtime = '60'
       c.BatchSpawnerBase.req_memory = '4096'
-      c.SlurmSpawner.batch_script = """#!/bin/bash
-      #SBATCH --partition={partition}
-      #SBATCH --time={runtime}
-      #SBATCH --output={homedir}/jupyterhub_slurmspawner_%j.log
-      #SBATCH --job-name=spawner-jupyterhub
-      #SBATCH --workdir={homedir}
-      #SBATCH --mem={memory}
-      #SBATCH --export=LANG,JUPYTERHUB_API_TOKEN,JPY_API_TOKEN,USER,HOME,SHELL
-      #SBATCH --uid={username}
-      #SBATCH --get-user-env=L
-      #SBATCH {options}
-      which jupyterhub-singleuser
-      {cmd}
-      """
+      c.BatchSpawnerBase.env_keep = ['LANG','JUPYTERHUB_API_TOKEN','JPY_API_TOKEN']
 
 ####################################
 # Init script for starting service
