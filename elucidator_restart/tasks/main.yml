@@ -58,7 +58,6 @@
       ELUCIDATOR_HOST: "{{ elucidator_config.target_host}}"
     volumes:
       - /etc/external/:/etc/external/
-      - /etc/external/ssh:/usr/share/httpd/.ssh
     ports:
       - "80:80"
       - "443:443"
