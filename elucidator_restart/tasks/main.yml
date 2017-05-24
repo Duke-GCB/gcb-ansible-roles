@@ -52,7 +52,7 @@
 
 - name: Create app container
   docker_container:
-    image: quay.io/dukegcb/elucidator-restart:docker
+    image: quay.io/dukegcb/elucidator-restart
     name: web
     env:
       ELUCIDATOR_HOST: "{{ elucidator_config.target_host}}"
