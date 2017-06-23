@@ -8,3 +8,5 @@ hpc:
     - blas
     - libicu
     - libXp
+    - kpathsea
+    
