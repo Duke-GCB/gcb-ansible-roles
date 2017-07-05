@@ -19,7 +19,7 @@
 
 - name: Create bespin-job-watcher container
   docker_container:
-    image: quay.io/dukegcb/bespin-job-watcher
+    image: dukegcb/bespin-job-watcher
     name: bespin-job-watcher
     volumes:
       - /etc/external/:/etc/external/

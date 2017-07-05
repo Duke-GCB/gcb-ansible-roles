@@ -31,7 +31,7 @@
 
 - name: Create app container
   docker_container:
-    image: quay.io/dukegcb/bespin-lando
+    image: dukegcb/bespin-lando
     name: bespin-lando
     volumes:
       - /etc/external/:/etc/external/
