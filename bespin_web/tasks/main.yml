@@ -23,6 +23,8 @@
     - LANDO_DJANGO_USERNAME: "{{ bespin_settings.web.lando_username }}"
     - LANDO_DJANGO_PASSWORD: "{{ bespin_settings.web.lando_password }}"
     - LANDO_DJANGO_TOKEN: "{{ bespin_settings.web.lando_token }}"
+    - GROUP_MANAGER_ACCOUNT_ID: "{{ bespin_settings.web.group_manager_account_id }}"
+    - GROUP_MANAGER_PASSWORD: "{{ bespin_settings.web.group_manager_password }}"
     - RABBIT_HOST: "{{ bespin_settings.rabbit.host }}"
     - RABBIT_USERNAME: "{{ bespin_settings.rabbit.username }}"
     - RABBIT_PASSWORD: "{{ bespin_settings.rabbit.password }}"
