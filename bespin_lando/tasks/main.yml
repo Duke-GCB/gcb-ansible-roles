@@ -1,5 +1,6 @@
 - set_fact:
     lando_config: |
+      cwl_base_command: {{ bespin_settings.worker_vm.cwl_base_command }}
       work_queue:
         host: "{{ bespin_settings.rabbit.host }}"
         username: "{{ bespin_settings.rabbit.username }}"
