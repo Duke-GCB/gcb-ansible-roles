@@ -1,6 +1,6 @@
 - name: Setup lando config
   template:
-    src: lando_config.j2
+    src: lando_config.yml.j2
     dest: /etc/lando_config.yml
 
 - name: Create app container
