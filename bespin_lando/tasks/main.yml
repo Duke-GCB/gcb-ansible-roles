@@ -1,35 +1,7 @@
-- set_fact:
-    lando_config: |
-      work_queue:
-        host: "{{ bespin_settings.rabbit.host }}"
-        username: "{{ bespin_settings.rabbit.username }}"
-        password: "{{ bespin_settings.rabbit.password }}"
-        listen_queue: "{{ bespin_settings.rabbit.listen_queue }}"
-        worker_username: "{{ bespin_settings.rabbit.worker_username }}"
-        worker_password: "{{ bespin_settings.rabbit.worker_password }}"
-      vm_settings:
-        worker_image_name: "{{ bespin_settings.worker_vm.image_name }}"
-        ssh_key_name: "{{ bespin_settings.worker_vm.ssh_key_name }}"
-        network_name: "{{ bespin_settings.worker_vm.network_name }}"
-        floating_ip_pool_name: "{{ bespin_settings.worker_vm.floating_ip_pool_name }}"
-        default_favor_name: "{{ bespin_settings.worker_vm.default_favor_name }}"
-        cwl_base_command: [ "{{ bespin_settings.worker_vm.cwl_base_command }}" ]
-        volume_mounts: "{{ bespin_settings.worker_vm.volume_mounts }}"
-      cloud_settings:
-        auth_url: "{{ bespin_settings.worker_openstack.auth_url }}"
-        username: "{{ bespin_settings.worker_openstack.username }}"
-        password: "{{ bespin_settings.worker_openstack.password }}"
-        user_domain_name: "{{ bespin_settings.worker_openstack.user_domain_name }}"
-        project_domain_name: "{{ bespin_settings.worker_openstack.project_domain_name }}"
-      bespin_api:
-        url: "{{ bespin_settings.web.url }}"
-        token: "{{ bespin_settings.web.lando_token }}"
-
 - name: Setup lando config
-  blockinfile:
+  template:
+    src: lando_config.j2
     dest: /etc/lando_config.yml
-    block: "{{ lando_config }}"
-    create: yes
 
 - name: Create app container
   docker_container:
