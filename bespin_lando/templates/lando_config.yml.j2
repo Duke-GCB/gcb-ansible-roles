@@ -18,7 +18,8 @@ vm_settings:
   volume_mounts:
   {% for device, mount in  bespin_settings.worker_vm.volume_mounts.iteritems() -%}
   {{ '  ' }}{{ device }}: {{ mount }}
-  {% endfor -%}
+  {% endfor %}
+
 cloud_settings:
   auth_url: "{{ bespin_settings.worker_openstack.auth_url }}"
   username: "{{ bespin_settings.worker_openstack.username }}"
