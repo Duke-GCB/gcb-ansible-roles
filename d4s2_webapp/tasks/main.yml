@@ -12,7 +12,7 @@
     restart_policy: always
 - name: Create app container
   docker_container:
-    image: quay.io/dukegcb/d4s2-apache
+    image: dukegcb/d4s2-apache
     name: web
     networks:
       - name: "{{ d4s2_config.network }}"
