@@ -35,45 +35,62 @@
     dest: /opt/STAR
     version: 2.5.3a
 - name: Symlink STAR
+  become: yes
   file: src=/opt/STAR/bin/Linux_x86_64/STAR dest=/usr/local/bin/STAR state=link
 - name: symlink STARlong
+  become: yes
   file: src=/opt/STAR/bin/Linux_x86_64/STARlong dest=/usr/local/bin/STARlong state=link
 - name: Download and unpack IGV
+  become: yes
   unarchive:
-    src: http://data.broadinstitute.org/igv/projects/downloads/IGV_2.3.97.zip
+    src: http://data.broadinstitute.org/igv/projects/downloads/2.3/IGV_2.3.97.zip
     dest: /opt
     remote_src: yes
 - name: Download and unpack fastQC
+  become: yes
   unarchive:
     src: http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.4.zip
     dest: /opt
     remote_src: yes
 - name: Make fastqc wrapper executable
+  become: yes
   file:
     path: /opt/FastQC/fastqc
     mode: 0755
 - name: Update PATH for all users to include /opt/FastQC
-  file: path=/etc/profile.d/fastqc.sh state=touch mode=0755
-- copy: content="export PATH=/opt/FastQC:$PATH" dest=/etc/profile.d/fastqc.sh
+  become: yes
+  blockinfile:
+    create: yes
+    path: /etc/profile.d/fastqc.sh
+    mode: 0644
+    block: export PATH=/opt/FastQC:$PATH
 - name: Install cutadapt
+  become: yes
   pip:
     name: cutadapt
     version: 1.14
 - name: Create TrimGalore directory
+  become: yes
   file: path=/opt/TrimGalore state=directory mode=0755
 - name: Install TrimGalore!
+  become: yes
   unarchive:
     src: http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/trim_galore_v0.4.4.zip
     dest: /opt/TrimGalore
     remote_src: yes
 - name: Symlink trim_galore
+  become: yes
   file: src=/opt/TrimGalore/trim_galore dest=/usr/local/bin/trim_galore state=link
 - name: Create NFS directory
-  file: path=/nfs/data state=directory mode=0755 recurse=yes
+  become: yes
+  file: path=/nfs/data state=directory mode=0755
 - name: mount /nfs/data
+  become: yes
   mount: fstype=nfs opts='vers=3' path=/nfs/data src={{ readonly }} state=mounted
 - name: Create GSEA directory
+  become: yes
   file: path=/opt/GSEA state=directory mode=0755
 - name: Symlink GSEA jar file to /opt/GSEA/gsea-3.0.jar
-  file: src=/nfs/data/GSEA/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
+  become: yes
+  file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
 
