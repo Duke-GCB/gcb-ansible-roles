@@ -263,6 +263,21 @@
       c.BatchSpawnerBase.req_runtime = '60'
       c.BatchSpawnerBase.req_memory = '4096'
       c.BatchSpawnerBase.env_keep = ['LANG','JUPYTERHUB_API_TOKEN','JPY_API_TOKEN']
+      c.SlurmSpawner.batch_script = """#!/bin/bash
+      #SBATCH --partition={partition}
+      #SBATCH --time={runtime}
+      #SBATCH --output={homedir}/jupyterhub_slurmspawner_%j.log
+      #SBATCH --job-name=spawner-jupyterhub
+      #SBATCH --workdir={homedir}
+      #SBATCH --mem={memory}
+      #SBATCH --export={keepvars}
+      #SBATCH --uid={username}
+      #SBATCH --get-user-env=L
+      #SBATCH {options}
+      {{ load_jupyterhub_path }}
+      which jupyterhub-singleuser
+      {cmd}
+      """
 
 ####################################
 # Init script for starting service
