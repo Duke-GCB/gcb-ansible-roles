@@ -200,7 +200,15 @@
     regexp: '^c\.Authenticator\.whitelist ='
     line: "c.Authenticator.whitelist = {{ whitelist_users }}"
   tags: jupyter-config
-  when: authenticator == 'pam'
+  when: authenticator == 'pam' and whitelist_mode == 'user'
+
+- name: Set whitelist groups
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.Authenticator\.group_whitelist ='
+    line: "c.Authenticator.group_whitelist = {{ whitelist_groups }}"
+  tags: jupyter-config
+  when: authenticator == 'pam' and whitelist_mode == 'group'
 
 - name: set hub IP address
   lineinfile:
