@@ -206,7 +206,7 @@
   lineinfile:
     path: '/etc/jupyterhub/jupyterhub_config.py'
     regexp: '^c\.JupyterHub\.hub_ip ='
-    line: "c.JupyterHub.hub_ip = '{{ip}}'"
+    line: "c.JupyterHub.hub_ip = '{{hub_ip}}'"
   tags: jupyter-config
 
 - name: set IP address
