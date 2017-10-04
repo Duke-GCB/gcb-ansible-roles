@@ -260,7 +260,6 @@
     marker: "# {mark} ANSIBLE MANAGED SLURM CONFIG"
     block: |
       c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
-      c.SlurmSpawner.req_options = '--account={{ slurm_account }}'
       c.BatchSpawnerBase.req_runtime = '60'
       c.BatchSpawnerBase.req_memory = '4096'
       c.BatchSpawnerBase.env_keep = ['LANG','JUPYTERHUB_API_TOKEN','JPY_API_TOKEN']
