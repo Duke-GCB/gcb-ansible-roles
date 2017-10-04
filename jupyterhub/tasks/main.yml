@@ -66,7 +66,7 @@
   tags: jupyter-user
 
 - name: add jupyter user, set encrypted password
-  user: name=jupyter state=present password="{{jupyterpw}}"
+  user: name=jupyter state=present password="{{jupyterpw}}" createhome=no
   tags: jupyter-user
 
 - name: add docker group
