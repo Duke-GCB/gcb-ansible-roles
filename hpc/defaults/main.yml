@@ -7,3 +7,6 @@ hpc:
     - lapack
     - blas
     - libicu
+    - libXp
+    - kpathsea
+    

@@ -1,12 +1,9 @@
 {
   "listenOn": {
     "host": "0.0.0.0",
-    "port": 80
-    {# when we have a cert
-      "port": 443,
-      "key": "/etc/external/ssl/privkey.pem",
-      "cert": "/etc/external/ssl/cacert.pem"
-    #}
+    "port": 443,
+    "key": "{{ bespin_settings.job_watcher.ssl_dir }}/server.key",
+    "cert": "{{ bespin_settings.job_watcher.ssl_dir }}/server.crt"
   },
   "rabbit": {
     "protocol": "amqp",

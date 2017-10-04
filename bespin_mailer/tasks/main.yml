@@ -1,0 +1,19 @@
+
+- set_fact:
+    web_environment: "{{ web_environment|default({}) | combine(item) }}"
+  with_items:
+    - BESPIN_API_TOKEN: "{{ bespin_settings.web.mailer_token }}"
+    - BESPIN_API_URL: "{{ bespin_settings.web.url }}"
+    - MESSAGE_QUEUE_HOST: "{{ bespin_settings.rabbit.host }}"
+    - MESSAGE_QUEUE_USERNAME: "{{ bespin_settings.rabbit.username }}"
+    - MESSAGE_QUEUE_PASSWORD: "{{ bespin_settings.rabbit.password }}"
+
+- name: Create app container
+  docker_container:
+    image: dukegcb/bespin-mailer
+    name: bespin-mailer
+    env: "{{ web_environment }}"
+    pull: true
+    etc_hosts: "{{ bespin_hosts_list }}"
+    state: started
+    restart_policy: always
