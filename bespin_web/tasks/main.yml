@@ -55,7 +55,7 @@
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
-      - "{{ bespin_settings.ui.srv_dir }}:/srv/ui"
+      - "{{ bespin_settings.ui.srv_dir }}:/srv/ui/"
     ports:
       - "80:80"
       - "443:443"
