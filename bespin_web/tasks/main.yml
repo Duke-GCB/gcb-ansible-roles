@@ -9,6 +9,22 @@
   copy: src="../../../files/{{ bespin_settings.web.ssl_key_file }}" dest="{{ bespin_settings.web.ssl_dir }}/privkey.pem"
         mode=400
 
+- name: Remove existing ui directory
+  file:
+    state: absent
+    path: "{{ bespin_settings.ui.srv_dir }}"
+
+- name: Make empty ui directory
+  file:
+    state: directory
+    path: "{{ bespin_settings.ui.srv_dir }}"
+
+- name: Download bespin-ui release tar.gz
+  unarchive:
+    src: "{{ bespin_settings.ui.dist_base_url }}/{{ bespin_settings.ui.dist_version }}/{{ bespin_settings.ui.dist_filename }}"
+    dest: "{{ bespin_settings.ui.srv_dir }}"
+    remote_src: yes
+
 - set_fact:
     web_environment: "{{ web_environment|default({}) | combine(item) }}"
   with_items:
@@ -17,7 +33,6 @@
     - POSTGRES_DB: "{{ bespin_settings.database.name }}"
     - BESPIN_SECRET_KEY: "{{ bespin_settings.web.secret_key }}"
     - BESPIN_ALLOWED_HOST: "{{ bespin_settings.web.allowed_host }}"
-    - BESPIN_CORS_HOST: "{{ bespin_settings.web.cors_host }}"
     - BESPIN_DB_HOST: "{{ bespin_settings.database.host }}"
     - BESPIN_SERVER_NAME: "{{bespin_settings.web.server_name}}"
     - BESPIN_SMTP_HOST: "{{bespin_settings.mailer.smtp_host}}"
@@ -40,6 +55,7 @@
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
+      - "{{ bespin_settings.ui.srv_dir }}:/srv/ui/"
     ports:
       - "80:80"
       - "443:443"
