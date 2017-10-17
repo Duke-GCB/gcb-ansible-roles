@@ -18,6 +18,7 @@
     - mesa-libGLU
     - java-1.8.0-openjdk-headless
     - python-pip
+    - python-devel
     - nfs-utils
     - R
     - samtools
@@ -28,6 +29,9 @@
 - name: Install bioconductor packages for R
   become: yes
   command: /usr/bin/Rscript -e "source('http://bioconductor.org/biocLite.R'); biocLite('DESeq2')"
+- name: Install QoRTs R package
+  become: yes
+  command: /usr/bin/Rscript -e "install.packages('http://hartleys.github.io/QoRTs/QoRTs_STABLE.tar.gz',repos=NULL,type='source');"
 - name: Install STAR
   become: yes
   git:
@@ -69,6 +73,10 @@
   pip:
     name: cutadapt
     version: 1.14
+- name: Install MultiQC
+  become: yes
+  pip:
+    name: multiqc
 - name: Create TrimGalore directory
   become: yes
   file: path=/opt/TrimGalore state=directory mode=0755
@@ -93,4 +101,13 @@
 - name: Symlink GSEA jar file to /opt/GSEA/gsea-3.0.jar
   become: yes
   file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
+- name: Create QoRTs directory
+  become: yes
+  file: path=/opt/QoRTs state=directory mode=0755
+- name: Install QoRTs .jar file
+  become: yes
+  get_url:
+    url: http://hartleys.github.io/QoRTs/QoRTs-STABLE.jar
+    dest: /opt/QoRTs/QoRTs-STABLE.jar
+    mode: 0555
 
