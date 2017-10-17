@@ -10,7 +10,7 @@
     "exchange": "job_status",
     "user": "{{ bespin_settings.rabbit.username }}",
     "password": "{{ bespin_settings.rabbit.password }}",
-    "host": "bespin-rabbit",
+    "host": "{{ bespin_settings.rabbit.host }}",
     "port": 5672
   },
   "bespinapi": {
