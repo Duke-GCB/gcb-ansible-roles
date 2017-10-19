@@ -134,6 +134,3 @@
 - name: Create /work directory
   become: yes
   file: path=/work state=directory mode=0777 recurse=yes
-- name: Symlink /work at /home/<user>/work
-  become: yes
-  shell: for dir in $(ls -1 /home); do ln -s /work /home/$dir/work; done
