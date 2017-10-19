@@ -1,5 +1,5 @@
 work_queue:
-  host: "{{ bespin_settings.rabbit.host }}"
+  host: "{{ bespin_hosts_list[bespin_settings.rabbit.host] }}"
   username: "{{ bespin_settings.rabbit.username }}"
   password: "{{ bespin_settings.rabbit.password }}"
   listen_queue: "{{ bespin_settings.rabbit.listen_queue }}"
