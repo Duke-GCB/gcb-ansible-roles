@@ -29,21 +29,21 @@
 - name: Exclude firefox from yum updates
   become: yes
   lineinfile:
-    path: /etc/yum.conf
+    dest: /etc/yum.conf
     insertafter: '^installonly_limit='
     line: 'exclude=firefox*'
 - name: Fix sshd_config for X11UseLocalhost
-    become: yes
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      regexp: '^#X11UseLocalhost'
-      line: 'X11UseLocalHost no'
+  become: yes
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^#X11UseLocalhost'
+    line: 'X11UseLocalHost no'
 - name: Fix sshd_config for X11DisplayOffset
-    become: yes
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      regexp: '^#X11DisplayOffset'
-      line: 'X11DisplayOffset 10'
+  become: yes
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^#X11DisplayOffset'
+    line: 'X11DisplayOffset 10'
 - name: Install cran packages for R
   become: yes
   command: /usr/bin/Rscript -e "install.packages(pkgs='ggplot2', repos=c('http://archive.linux.duke.edu/cran/'))"
