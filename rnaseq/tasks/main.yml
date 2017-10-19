@@ -9,7 +9,10 @@
     - unzip
     - tcsh
     - evince
-    - firefox
+    - firefox-38.7.0-1.el7_2
+    - xorg-x11-xauth
+    - xorg-x11-apps
+    - xorg-x11-xinit
     - gedit
     - gedit-plugins
     - inkscape
@@ -23,6 +26,24 @@
     - R
     - samtools
 # for ansible >=2.4, use allow_downgrade and specify versions for R and samtools
+- name: Exclude firefox from yum updates
+  become: yes
+  lineinfile:
+    path: /etc/yum.conf
+    insertafter: '^installonly_limit='
+    line: 'exclude=firefox*'
+- name: Fix sshd_config for X11UseLocalhost
+    become: yes
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^#X11UseLocalhost'
+      line: 'X11UseLocalHost no'
+- name: Fix sshd_config for X11DisplayOffset
+    become: yes
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^#X11DisplayOffset'
+      line: 'X11DisplayOffset 10'
 - name: Install cran packages for R
   become: yes
   command: /usr/bin/Rscript -e "install.packages(pkgs='ggplot2', repos=c('http://archive.linux.duke.edu/cran/'))"
@@ -110,4 +131,9 @@
     url: http://hartleys.github.io/QoRTs/QoRTs-STABLE.jar
     dest: /opt/QoRTs/QoRTs-STABLE.jar
     mode: 0555
-
+- name: Create /work directory
+  become: yes
+  file: path=/work state=directory mode=0777 recurse=yes
+- name: Symlink /work at /home/<user>/work
+  become: yes
+  shell: for dir in $(ls -1 /home); do ln -s /work /home/$dir/work; done
