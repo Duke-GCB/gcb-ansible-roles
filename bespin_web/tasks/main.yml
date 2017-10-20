@@ -1,7 +1,10 @@
-- include_tasks: setup-environment.yml
+- name: Setup bespin web vars
+  include_tasks: setup-environment.yml
 
-- include_tasks: run-fixtures.yml
-  tags: run-bespin-web-fixtures
+- name: Run fixtures
+  include_tasks: run-fixtures.yml
+  when: run_fixtures
 
-- include_tasks: run-server.yml
-  tags: run-bespin-web-server
+- name: Run web server
+  include_tasks: run-server.yml
+  when: run_server
