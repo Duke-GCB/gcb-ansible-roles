@@ -101,7 +101,9 @@
     version: 1.14
 - name: Install development version of MultiQC
   become: yes
-  shell: 'pip install --upgrade --force-reinstall git+https://github.com/ewels/MultiQC.git'
+  pip:
+    name: git+https://github.com/ewels/MultiQC.git#egg=multiqc
+    extra_args: --upgrade --force-reinstall
 - name: Install HTSeq
   become: yes
   pip:
