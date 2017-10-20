@@ -1,27 +1,29 @@
-- name: Make SSL directory
-  file: path="{{ fixture_directory }}" state=directory
+- name: Make Fixture directory
+  file:
+    path: "{{ bespin_settings.web.fixture_directory }}"
+    state: directory
 
 - name: Place DukeDS fixture file
   copy:
     src: "../../../files/bespin-dukeds-fixture-{{ bespin_settings.web.fixture_suffix }}.yaml"
-    dest: "{{ fixture_directory }}/bespin-dukeds-fixture.yaml"
+    dest: "{{ bespin_settings.web.fixture_directory }}/bespin-dukeds-fixture.yaml"
     mode: 400
 
 - name: Place OAuth fixture file
   copy:
     src: "../../../files/bespin-oauth-fixture-{{ bespin_settings.web.fixture_suffix }}.yaml"
-    dest: "{{ fixture_directory }}/bespin-oauth-fixture.yaml"
+    dest: "{{ bespin_settings.web.fixture_directory }}/bespin-oauth-fixture.yaml"
     mode: 400
 
 - name: Create app container
   docker_container:
     image: dukegcb/bespin-web
-    name: bespin-web
+    name: bespin-fixture-runner
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
       - "{{ bespin_settings.ui.srv_dir }}:/srv/ui/"
-      - "{{ fixture_directory }}":/private/fixtures
+      - "{{ bespin_settings.web.fixture_directory }}:/private/fixtures"
     pull: true
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
