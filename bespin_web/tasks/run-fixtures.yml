@@ -1,0 +1,25 @@
+- name: Place DukeDS fixture file
+  copy:
+    src: "../../../files/bespin-dukeds-fixture-{{ bespin_settings.web.fixture_suffix }}.yaml"
+    dest: "/private/fixtures/bespin-dukeds-fixture.yaml"
+    mode: 400
+
+- name: Place OAuth fixture file
+  copy:
+    src: "../../../files/bespin-oauth-fixture-{{ bespin_settings.web.fixture_suffix }}.yaml"
+    dest: "/private/fixtures/bespin-oauth-fixture.yaml"
+    mode: 400
+
+- name: Create app container
+  docker_container:
+    image: dukegcb/bespin-web
+    name: bespin-web
+    env: "{{ web_environment }}"
+    volumes:
+      - /etc/external/:/etc/external/
+      - "{{ bespin_settings.ui.srv_dir }}:/srv/ui/"
+      - /private/fixtures:/private/fixtures
+    pull: true
+    etc_hosts: "{{ bespin_hosts_list }}"
+    state: started
+    command: /scripts/load-fixtures.sh
