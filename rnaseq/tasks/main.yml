@@ -49,7 +49,6 @@
 - name: Install cran packages for R
   become: yes
   command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos=c('http://archive.linux.duke.edu/cran/'))"
-
 - name: Install bioconductor packages for R
   become: yes
   command: /usr/bin/Rscript -e "source('http://bioconductor.org/biocLite.R'); biocLite('DESeq2')"
