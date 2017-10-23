@@ -19,7 +19,7 @@
     - ImageMagick
     - mesa-libGL
     - mesa-libGLU
-    - java-1.8.0-openjdk-headless
+    - java-1.8.0-openjdk
     - python-pip
     - python-devel
     - nfs-utils
