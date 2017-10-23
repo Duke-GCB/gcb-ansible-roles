@@ -23,6 +23,8 @@
     - python-pip
     - python-devel
     - nfs-utils
+    - libxml2-devel
+    - curl-devel
     - R
     - samtools
 # for ansible >=2.4, use allow_downgrade and specify versions for R and samtools
