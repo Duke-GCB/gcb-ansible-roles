@@ -13,11 +13,10 @@
 - name: Load Fixtures
   docker_container:
     command: "python manage.py loaddata {{ bespin_settings.web.fixture_directory }}/{{ item }}"
-    name: bespin-fixture-runner
+    name: bespin-loaddata
     image: dukegcb/bespin-web
     pull: true
     state: started
-    auto_remove: true
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
@@ -28,11 +27,10 @@
 - name: Specific Load Commands
   docker_container:
     command: "python manage.py {{ item }}"
-    name: bespin-load-command-runner
+    name: bespin-loaddata
     image: dukegcb/bespin-web
     pull: true
     state: started
-    auto_remove: true
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
@@ -41,3 +39,7 @@
     - "creategroupmanagerconnection ${GROUP_MANAGER_ACCOUNT_ID} ${GROUP_MANAGER_PASSWORD}"
     - "makelandoconnection ${RABBIT_HOST} ${RABBIT_USERNAME} ${RABBIT_PASSWORD} ${RABBIT_QUEUENAME}"
     - "makeusertoken ${LANDO_DJANGO_USERNAME} ${LANDO_DJANGO_PASSWORD} ${LANDO_DJANGO_TOKEN}"
+
+- name: Remove loaddata container
+  docker_container:
+    state: absent
