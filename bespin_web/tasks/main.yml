@@ -4,6 +4,9 @@
 
 - name: Setup bespin web vars
   include_tasks: setup-environment.yml
+  tags:
+  - bespin_web_loaddata
+  - bespin_web_server
 
 - name: Load static data
   include_tasks: loaddata.yml
