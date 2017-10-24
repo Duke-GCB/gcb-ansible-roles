@@ -17,6 +17,7 @@
     image: dukegcb/bespin-web
     pull: true
     state: started
+    detach: false
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
@@ -31,6 +32,7 @@
     image: dukegcb/bespin-web
     pull: true
     state: started
+    detach: false
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
