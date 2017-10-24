@@ -1,0 +1,48 @@
+- name: Make Fixture directory
+  file:
+    path: "{{ bespin_settings.web.fixture_directory }}"
+    state: directory
+
+- name: Place fixture files
+  copy:
+    src: "../../../files/{{ item }}"
+    dest: "{{ bespin_settings.web.fixture_directory }}/{{ item }}"
+    mode: 400
+  with_items: "{{bespin_settings.web.fixture_files}}"
+
+- name: Load Fixtures
+  docker_container:
+    command: "python manage.py loaddata {{ bespin_settings.web.fixture_directory }}/{{ item }}"
+    name: bespin-loaddata
+    image: dukegcb/bespin-web
+    pull: true
+    state: started
+    detach: false
+    env: "{{ web_environment }}"
+    volumes:
+      - /etc/external/:/etc/external/
+      - "{{ bespin_settings.web.fixture_directory }}:{{ bespin_settings.web.fixture_directory }}"
+    etc_hosts: "{{ bespin_hosts_list }}"
+  with_items: "{{bespin_settings.web.fixture_files}}"
+
+- name: Specific Load Commands
+  docker_container:
+    command: "python manage.py {{ item }}"
+    name: bespin-loaddata
+    image: dukegcb/bespin-web
+    pull: true
+    state: started
+    detach: false
+    env: "{{ web_environment }}"
+    volumes:
+      - /etc/external/:/etc/external/
+    etc_hosts: "{{ bespin_hosts_list }}"
+  with_items:
+    - "creategroupmanagerconnection {{ bespin_settings.web.group_manager_account_id }} {{ bespin_settings.web.group_manager_password }}"
+    - "makelandoconnection {{ bespin_settings.rabbit.host }} {{ bespin_settings.rabbit.username }} {{ bespin_settings.rabbit.password }} {{ bespin_settings.rabbit.listen_queue }}"
+    - "makeusertoken {{ bespin_settings.web.lando_username }} {{ bespin_settings.web.lando_password }} {{ bespin_settings.web.lando_token }}"
+
+- name: Remove loaddata container
+  docker_container:
+    name: bespin-loaddata
+    state: absent

@@ -1,0 +1,13 @@
+- set_fact:
+    web_environment: "{{ web_environment|default({}) | combine(item) }}"
+  with_items:
+    - POSTGRES_USER: "{{ bespin_settings.database.username }}"
+    - POSTGRES_PASSWORD: "{{ bespin_settings.database.password }}"
+    - POSTGRES_DB: "{{ bespin_settings.database.name }}"
+    - BESPIN_SECRET_KEY: "{{ bespin_settings.web.secret_key }}"
+    - BESPIN_ALLOWED_HOST: "{{ bespin_settings.web.allowed_host }}"
+    - BESPIN_DB_HOST: "{{ bespin_settings.database.host }}"
+    - BESPIN_SERVER_NAME: "{{bespin_settings.web.server_name}}"
+    - BESPIN_SMTP_HOST: "{{bespin_settings.mailer.smtp_host}}"
+    - BESPIN_MAILER_EMAIL: "{{bespin_settings.mailer.email}}"
+    - BESPIN_MAILER_ADMIN_BCC: "{{bespin_settings.mailer.admin_bcc}}"
