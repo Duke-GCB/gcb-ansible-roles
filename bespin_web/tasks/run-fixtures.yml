@@ -3,28 +3,41 @@
     path: "{{ bespin_settings.web.fixture_directory }}"
     state: directory
 
-- name: Place DukeDS fixture file
+- name: Place fixture files
   copy:
-    src: "../../../files/bespin-dukeds-fixture-{{ bespin_settings.web.fixture_suffix }}.yaml"
-    dest: "{{ bespin_settings.web.fixture_directory }}/bespin-dukeds-fixture.yaml"
+    src: "../../../files/{{ item }}"
+    dest: "{{ bespin_settings.web.fixture_directory }}/{{ item }}"
     mode: 400
+  with_items: "{{bespin_settings.web.fixture_files}}"
 
-- name: Place OAuth fixture file
-  copy:
-    src: "../../../files/bespin-oauth-fixture-{{ bespin_settings.web.fixture_suffix }}.yaml"
-    dest: "{{ bespin_settings.web.fixture_directory }}/bespin-oauth-fixture.yaml"
-    mode: 400
-
-- name: Create app container
+- name: Load Fixtures
   docker_container:
-    image: dukegcb/bespin-web
+    command: "python manage.py loaddata {{ bespin_settings.web.fixture_directory }}/{{ item }}"
     name: bespin-fixture-runner
+    image: dukegcb/bespin-web
+    pull: true
+    state: started
+    auto_remove: true
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
-      - "{{ bespin_settings.ui.srv_dir }}:/srv/ui/"
-      - "{{ bespin_settings.web.fixture_directory }}:/private/fixtures"
-    pull: true
+      - "{{ bespin_settings.web.fixture_directory }}:{{ bespin_settings.web.fixture_directory }}"
     etc_hosts: "{{ bespin_hosts_list }}"
+  with_items: "{{bespin_settings.web.fixture_files}}"
+
+- name: Load Commands
+  docker_container:
+    command: "python manage.py {{ item }}"
+    name: bespin-load-command-runner
+    image: dukegcb/bespin-web
+    pull: true
     state: started
-    command: /scripts/load-fixtures.sh
+    auto_remove: true
+    env: "{{ web_environment }}"
+    volumes:
+      - /etc/external/:/etc/external/
+    etc_hosts: "{{ bespin_hosts_list }}"
+  with_items:
+    - "creategroupmanagerconnection ${GROUP_MANAGER_ACCOUNT_ID} ${GROUP_MANAGER_PASSWORD}"
+    - "makelandoconnection ${RABBIT_HOST} ${RABBIT_USERNAME} ${RABBIT_PASSWORD} ${RABBIT_QUEUENAME}"
+    - "makeusertoken ${LANDO_DJANGO_USERNAME} ${LANDO_DJANGO_PASSWORD} ${LANDO_DJANGO_TOKEN}"

@@ -1,10 +1,13 @@
+# Create/Setup bespin-web docker container
+# The bespin_web_fixtures will load data based on
+
 - name: Setup bespin web vars
   include_tasks: setup-environment.yml
 
 - name: Run fixtures
   include_tasks: run-fixtures.yml
-  when: run_fixtures
+  tags: bespin_web_fixtures
 
 - name: Run web server
   include_tasks: run-server.yml
-  when: run_server
+  tags: bespin_web_server
