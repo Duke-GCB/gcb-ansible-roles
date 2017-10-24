@@ -1,12 +1,13 @@
 # Create/Setup bespin-web docker container
-# The bespin_web_fixtures will load data based on
+# bespin_web_loaddata - loads the database associated with bespin-web with data based on bespin_settings
+# bespin_web_server- creates/updates the webserver docker container
 
 - name: Setup bespin web vars
   include_tasks: setup-environment.yml
 
-- name: Run fixtures
-  include_tasks: run-fixtures.yml
-  tags: bespin_web_fixtures
+- name: Load static data
+  include_tasks: loaddata.yml
+  tags: bespin_web_loaddata
 
 - name: Run web server
   include_tasks: run-server.yml

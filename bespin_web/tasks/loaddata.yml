@@ -25,7 +25,7 @@
     etc_hosts: "{{ bespin_hosts_list }}"
   with_items: "{{bespin_settings.web.fixture_files}}"
 
-- name: Load Commands
+- name: Specific Load Commands
   docker_container:
     command: "python manage.py {{ item }}"
     name: bespin-load-command-runner
