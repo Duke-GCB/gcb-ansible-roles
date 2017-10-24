@@ -42,4 +42,5 @@
 
 - name: Remove loaddata container
   docker_container:
+    name: bespin-loaddata
     state: absent
