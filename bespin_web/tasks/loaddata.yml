@@ -38,9 +38,9 @@
       - /etc/external/:/etc/external/
     etc_hosts: "{{ bespin_hosts_list }}"
   with_items:
-    - "creategroupmanagerconnection ${GROUP_MANAGER_ACCOUNT_ID} ${GROUP_MANAGER_PASSWORD}"
-    - "makelandoconnection ${RABBIT_HOST} ${RABBIT_USERNAME} ${RABBIT_PASSWORD} ${RABBIT_QUEUENAME}"
-    - "makeusertoken ${LANDO_DJANGO_USERNAME} ${LANDO_DJANGO_PASSWORD} ${LANDO_DJANGO_TOKEN}"
+    - "creategroupmanagerconnection {{ bespin_settings.web.group_manager_account_id }} {{ bespin_settings.web.group_manager_password }}"
+    - "makelandoconnection {{ bespin_settings.rabbit.host }} {{ bespin_settings.rabbit.username }} {{ bespin_settings.rabbit.password }} {{ bespin_settings.rabbit.listen_queue }}"
+    - "makeusertoken {{ bespin_settings.web.lando_username }} {{ bespin_settings.web.lando_password }} {{ bespin_settings.web.lando_token }}"
 
 - name: Remove loaddata container
   docker_container:
