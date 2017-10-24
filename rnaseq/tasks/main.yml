@@ -19,10 +19,12 @@
     - ImageMagick
     - mesa-libGL
     - mesa-libGLU
-    - java-1.8.0-openjdk-headless
+    - java-1.8.0-openjdk
     - python-pip
     - python-devel
     - nfs-utils
+    - libxml2-devel
+    - curl-devel
     - R
     - samtools
 # for ansible >=2.4, use allow_downgrade and specify versions for R and samtools
@@ -46,7 +48,7 @@
     line: 'X11DisplayOffset 10'
 - name: Install cran packages for R
   become: yes
-  command: /usr/bin/Rscript -e "install.packages(pkgs='ggplot2', repos=c('http://archive.linux.duke.edu/cran/'))"
+  command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos=c('http://archive.linux.duke.edu/cran/'))"
 - name: Install bioconductor packages for R
   become: yes
   command: /usr/bin/Rscript -e "source('http://bioconductor.org/biocLite.R'); biocLite('DESeq2')"
@@ -89,15 +91,25 @@
     path: /etc/profile.d/fastqc.sh
     mode: 0644
     block: export PATH=/opt/FastQC:$PATH
+- name: Upgrade pip
+  become: yes
+  pip:
+    name: pip
+    extra_args: --upgrade
 - name: Install cutadapt
   become: yes
   pip:
     name: cutadapt
     version: 1.14
-- name: Install MultiQC
+- name: Install development version of MultiQC
   become: yes
   pip:
-    name: multiqc
+    name: git+https://github.com/ewels/MultiQC.git#egg=multiqc
+    extra_args: --upgrade --force-reinstall
+- name: Install HTSeq
+  become: yes
+  pip:
+    name: HTSeq
 - name: Create TrimGalore directory
   become: yes
   file: path=/opt/TrimGalore state=directory mode=0755
