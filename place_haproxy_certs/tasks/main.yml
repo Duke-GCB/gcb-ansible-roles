@@ -1,0 +1,10 @@
+- name: Place haproxy.pem file containing [cert, intermediates, key]
+  copy:
+    src: "{{ cert_key_file }}"
+    dest: /etc/ssl/private/haproxy.pem
+    mode: 0644
+
+- name: Restart haproxy
+  service:
+    name: haproxy
+    state: reloaded
