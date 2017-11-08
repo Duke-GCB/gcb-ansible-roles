@@ -15,6 +15,10 @@ vm_settings:
   {% for item in bespin_settings.worker_vm.cwl_base_command -%}
   {{ '  ' }}- "{{ item }}"
   {% endfor -%}
+  cwl_post_process_command:
+  {% for item in bespin_settings.worker_vm.cwl_post_process_command -%}
+  {{ '  ' }}- "{{ item }}"
+  {% endfor -%}
   volume_mounts:
   {% for device, mount in  bespin_settings.worker_vm.volume_mounts.iteritems() -%}
   {{ '  ' }}{{ device }}: {{ mount }}
