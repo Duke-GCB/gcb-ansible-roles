@@ -10,6 +10,11 @@
     mode: 400
   with_items: "{{bespin_settings.web.fixture_files}}"
 
+# Notes: The order here is important. The migrate command must be run to ensure the tables exist.
+# The web process will also migrate the database on startup, but usually when loading initial data
+# that would not have run yet. Also, the makelandoconnection must run before loading the fixtures
+# since the fixtures depend on a "lando" user with id 1.
+
 - name: Specific Load Commands
   docker_container:
     command: "python manage.py {{ item }}"
@@ -23,6 +28,7 @@
       - /etc/external/:/etc/external/
     etc_hosts: "{{ bespin_hosts_list }}"
   with_items:
+    - "migrate"
     - "creategroupmanagerconnection {{ bespin_settings.web.group_manager_account_id }} {{ bespin_settings.web.group_manager_password }}"
     - "makelandoconnection {{ bespin_settings.rabbit.host }} {{ bespin_settings.rabbit.username }} {{ bespin_settings.rabbit.password }} {{ bespin_settings.rabbit.listen_queue }}"
     - "makeusertoken {{ bespin_settings.web.lando_username }} {{ bespin_settings.web.lando_password }} {{ bespin_settings.web.lando_token }}"

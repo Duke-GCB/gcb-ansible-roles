@@ -8,7 +8,6 @@
     image: dukegcb/bespin-lando
     name: bespin-lando
     volumes:
-      - /etc/external/:/etc/external/
       - /etc/lando_config.yml:/etc/lando_config.yml
     pull: true
     etc_hosts: "{{ bespin_hosts_list }}"

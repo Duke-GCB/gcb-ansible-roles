@@ -11,7 +11,6 @@
     name: bespin-db
     env: "{{ db_environment }}"
     volumes:
-      - /etc/external/:/etc/external/
       - /var/lib/postgresql/data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
