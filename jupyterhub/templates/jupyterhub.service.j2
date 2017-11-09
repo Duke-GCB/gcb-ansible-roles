@@ -1,0 +1,15 @@
+# From https://github.com/jupyterhub/jupyterhub/wiki/Run-jupyterhub-as-a-system-service
+
+[Unit]
+Description=Jupyterhub
+After=network-online.target
+
+[Service]
+{% if authenticator == 'gitlab_oauth' %}
+Environment=GITLAB_HOST={{ gitlab.host }}
+{% endif %}
+ExecStart=/usr/local/bin/jupyterhub
+WorkingDirectory=/etc/jupyterhub
+
+[Install]
+WantedBy=multi-user.target

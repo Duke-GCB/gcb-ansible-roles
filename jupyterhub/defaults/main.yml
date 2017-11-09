@@ -1,0 +1,6 @@
+---
+spawner: sudo
+authenticator: "pam"
+docker_image: "jupyterhub/singleuser"
+slurm_partition: "all"
+slurm_account: ""

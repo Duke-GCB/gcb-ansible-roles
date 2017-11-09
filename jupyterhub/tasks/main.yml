@@ -1,0 +1,366 @@
+---
+# file: roles/jupyter/tasks/main.yml
+# requires python3
+
+####################################
+# Install base dependencies
+####################################
+
+
+- name: Install Python 3, Node, and NPM
+  apt: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'Debian'
+  with_items:
+  - python3
+  - python3-setuptools
+  - python3-dev
+  - python3-pip
+  - sudo
+  - npm
+  - nodejs-legacy
+  - git
+  tags: jupyter-deps
+
+- name: Install Python 3, Node, and NPM
+  yum: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'RedHat'
+  with_items:
+  - python36u
+  - python36u-setuptools
+  - python36u-devel
+  - python36u-pip
+  - sudo
+  - npm
+  - nodejs
+  - git
+  tags: jupyter-deps
+
+- name: Install Docker and Docker-py
+  apt: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'Debian'
+  with_items:
+  - docker.io
+  - python3-docker
+  when: spawner == 'docker'
+  tags: jupyter-deps
+
+- name: Install Docker and Docker-py
+  yum: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'RedHat'
+  with_items:
+  - docker.io
+  - python3-docker
+  when: spawner == 'docker'
+  tags: jupyter-deps
+
+- name: install npm package configurable-http-proxy
+  npm: name=configurable-http-proxy global=yes state=present
+  tags: jupyter-deps
+
+####################################
+# Configure user/group on system
+####################################
+
+- name: add jupyter group
+  group: name=jupyter state=present
+  tags: jupyter-user
+
+- name: add jupyter user, set encrypted password
+  user: name=jupyter state=present password="{{jupyterpw}}" createhome=no
+  tags: jupyter-user
+
+- name: add docker group
+  group: name=docker state=present
+  when: spawner == 'docker'
+  tags: jupyter-user
+
+- name: put jupyter user in docker-related groups
+  user: name=jupyter groups=docker,jupyter,shadow
+  when: spawner == 'docker'
+  tags: jupyter-user
+
+- name: put jupyter user in sudospawner-related groups
+  user: name=jupyter groups=jupyter,shadow
+  when: spawner == 'sudo' and ansible_os_family == 'Debian'
+  tags: jupyter-user
+
+- name: put jupyter user in sudospawner-related groups
+  user: name=jupyter groups=jupyter
+  when: spawner == 'sudo' and ansible_os_family == 'RedHat'
+  tags: jupyter-user
+
+####################################
+# Place folder and sudoers config
+####################################
+
+- name: create jupyterhub folder in etc
+  file: path=/etc/jupyterhub state=directory mode=0755 owner=jupyter group=jupyter
+  tags: jupyter-files
+
+- name: copy jupyterhub sudospawner sudo config
+  copy: src=sudo_jupyter dest=/etc/sudoers.d/jupyter mode=0440 owner=root group=root
+  tags: jupyter-sudospawner
+  when: spawner == 'sudo'
+
+####################################
+# Pull docker image
+####################################
+- name: pull Docker image
+  docker_image: name="{{docker_image}}"
+  when: spawner == 'docker'
+
+####################################
+# Install jupyter from pip
+####################################
+- name: set pip to use
+  set_fact:
+    pip_executable: "/usr/bin/pip3.6"
+  when: ansible_os_family == 'RedHat'
+
+- name: set pip to use
+  set_fact:
+    pip_executable: "/usr/bin/pip3"
+  when: ansible_os_family == 'Debian'
+
+
+- name: install jupyter, jupyterhub via pip
+  pip: executable="{{ pip_executable }}" name={{item}} extra_args='--upgrade'
+  tags: jupyter-deps
+  with_items:
+  - jupyter
+  - jupyterhub
+
+- name: install sudospawner via pip
+  pip: executable={{pip_executable}} name=sudospawner
+  tags: jupyter-sudospawner
+  when: spawner == 'sudo'
+
+- name: install dockerspawner via pip
+  pip: executable="{{ pip_executable }}" name=dockerspawner
+  tags: jupyter-dockerspawner
+  when: spawner == 'docker'
+
+- name: install slurm (batchspawner) via pip and git
+  pip: executable="{{ pip_executable }}" name=git+https://github.com/jupyterhub/batchspawner.git#egg=batchspawner
+  tags: jupyter-slurmspawner
+  when: spawner == 'slurm'
+
+####################################
+# Generate/place config file
+####################################
+
+- name: Check to see if config file exists
+  stat: path=/etc/jupyterhub/jupyterhub_config.py
+  register: config_exists
+  tags: jupyter-config
+
+- name: configure jupyterhub
+  command: jupyterhub --generate-config chdir=/etc/jupyterhub/ creates=/etc/jupyterhub/jupyterhub_config.py
+  when: config_exists.stat.exists == False
+  tags: jupyter-config
+
+####################################
+# Update config file
+####################################
+
+- name: set jupyterhub admin user
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.Authenticator\.admin_users ='
+    line: "c.Authenticator.admin_users = {'jupyter'}"
+  tags: jupyter-config
+
+- name: Set Local PAM authenticator
+  lineinfile:
+    regexp: '^c\.JupyterHub\.authenticator_class ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.authenticator_class = 'jupyterhub.auth.PAMAuthenticator'"
+  tags: jupyter-local-auth
+  when: authenticator == 'pam'
+
+- name: set jupyterhub to not create system users when using PAM auth
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.LocalAuthenticator\.create_system_users ='
+    line: "c.LocalAuthenticator.create_system_users = False"
+  tags: jupyter-config
+  when: authenticator == 'pam'
+
+- name: set jupyterhub to create system users when not using PAM auth
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.LocalAuthenticator\.create_system_users ='
+    line: "c.LocalAuthenticator.create_system_users = True"
+  tags: jupyter-config
+  when: authenticator != 'pam'
+
+- name: Set whitelist users
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.Authenticator\.whitelist ='
+    line: "c.Authenticator.whitelist = {{ whitelist_users }}"
+  tags: jupyter-config
+  when: authenticator == 'pam' and whitelist_mode == 'user'
+
+- name: Set whitelist groups
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.Authenticator\.group_whitelist ='
+    line: "c.Authenticator.group_whitelist = {{ whitelist_groups }}"
+  tags: jupyter-config
+  when: authenticator == 'pam' and whitelist_mode == 'group'
+
+- name: set hub IP address
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.hub_ip ='
+    line: "c.JupyterHub.hub_ip = '{{hub_ip}}'"
+  tags: jupyter-config
+
+- name: set IP address
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.ip ='
+    line: "c.JupyterHub.ip = '{{ip}}'"
+  tags: jupyter-config
+
+- name: set port
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.port ='
+    line: "c.JupyterHub.port = {{port}}"
+  tags: jupyter-config
+
+- name: set proxy IP address
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.proxy_api_ip ='
+    line: "c.JupyterHub.proxy_api_ip = '{{ ip }}'"
+  tags: jupyter-config
+
+- name: set spawner to sudospawner
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.spawner_class ='
+    line: "c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'"
+  tags: jupyter-config, jupyter-sudospawner
+  when: spawner == 'sudo'
+
+- name: set spawner to dockerspawner
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.spawner_class ='
+    line: "c.JupyterHub.spawner_class = 'dockerspawner.DockerSpawner'"
+  tags: jupyter-config, jupyter-dockerspawner
+  when: spawner == 'docker'
+
+- name: set spawner to slurm batchspawner
+  lineinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    regexp: '^c\.JupyterHub\.spawner_class ='
+    line: "c.JupyterHub.spawner_class = 'batchspawner.SlurmSpawner'"
+  tags: jupyter-config, jupyter-slurmspawner
+  when: spawner == 'slurm'
+
+- name: Configure batchspawner
+  blockinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    marker: "# {mark} ANSIBLE MANAGED SLURM CONFIG"
+    block: |
+      c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
+      c.BatchSpawnerBase.req_runtime = '60'
+      c.BatchSpawnerBase.req_memory = '4096'
+      c.BatchSpawnerBase.env_keep = ['LANG','JUPYTERHUB_API_TOKEN','JPY_API_TOKEN']
+      c.SlurmSpawner.batch_script = """#!/bin/bash
+      #SBATCH --partition={partition}
+      #SBATCH --time={runtime}
+      #SBATCH --output={homedir}/jupyterhub_slurmspawner_%j.log
+      #SBATCH --job-name=spawner-jupyterhub
+      #SBATCH --workdir={homedir}
+      #SBATCH --mem={memory}
+      #SBATCH --export={keepvars}
+      #SBATCH --uid={username}
+      #SBATCH --get-user-env=L
+      #SBATCH {options}
+      {{ load_jupyterhub_path }}
+      which jupyterhub-singleuser
+      {cmd}
+      """
+
+####################################
+# Init script for starting service
+####################################
+
+- name: install jupyterhub systemd service
+  template: src=jupyterhub.service.j2 dest=/lib/systemd/system/jupyterhub.service mode=755 owner=root group=root
+  tags: jupyter-service
+  when: ansible_os_family == 'Debian'
+
+- name: Install jupyterhub init script
+  template: src=jupyterhub-init.j2 dest=/etc/init.d/jupyterhub mode=755 owner=root group=root
+  tags: jupyter-service
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure hostname is in /etc/hosts file
+  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ip}}  {{ansible_hostname}}"
+  tags: jupyter-config
+
+- name: Place SSL private key
+  copy: src=../../../files/jupyterhub.key dest=/etc/jupyterhub/server.key
+  tags: jupyter-ssl
+
+- name: Place SSL Certificate
+  copy: src=../../../files/jupyterhub.crt dest=/etc/jupyterhub/server.crt
+  tags: jupyter-ssl
+
+- name: Set SSL Certificate
+  lineinfile:
+    regexp: '^c\.JupyterHub\.ssl_cert ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.ssl_cert = '/etc/jupyterhub/server.crt'"
+  tags: jupyter-ssl
+
+- name: Set SSL private key
+  lineinfile:
+    regexp: '^c\.JupyterHub\.ssl_key ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.ssl_key = '/etc/jupyterhub/server.key'"
+  tags: jupyter-ssl
+
+### OAuth
+
+- name: Install jupyterhub oauthenticator
+  pip:
+    executable: "{{ pip_executable }}"
+    name: oauthenticator
+  tags: jupyter-oauth
+  when: authenticator == 'gitlab_oauth'
+
+- name: Set GitLab info
+  blockinfile:
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    marker: "# {mark} ANSIBLE MANAGED OAUTH CONFIG"
+    block: |
+      c.GitLabOAuthenticator.oauth_callback_url = '{{ gitlab.callback_url }}'
+      c.GitLabOAuthenticator.client_id = '{{ gitlab.client_id }}'
+      c.GitLabOAuthenticator.client_secret = '{{ gitlab.client_secret }}'
+  when: authenticator == 'gitlab_oauth'
+
+- name: Set GitLab authenticator
+  lineinfile:
+    regexp: '^c\.JupyterHub\.authenticator_class ='
+    path: '/etc/jupyterhub/jupyterhub_config.py'
+    line: "c.JupyterHub.authenticator_class = 'oauthenticator.gitlab.GitLabOAuthenticator'"
+  tags: jupyter-oauth-gitlab
+  when: authenticator == 'gitlab_oauth'
+
+# Always reload the daemon and restart the service, since the underlying config easily changes
+- name: start jupyterhub systemd service
+  systemd: name=jupyterhub enabled=yes daemon_reload=yes state=restarted
+  tags: jupyter-service
+  when: ansible_os_family == 'Debian'
+
+- name: start jupyterhub init script
+  service: name=jupyterhub enabled=yes state=restarted
+  tags: jupyter-service
+  when: ansible_os_family == 'RedHat'
