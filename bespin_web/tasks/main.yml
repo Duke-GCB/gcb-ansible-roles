@@ -1,49 +1,17 @@
-- name: Make SSL directory
-  file: path="{{ bespin_settings.web.ssl_dir }}" state=directory
+# Create/Setup bespin-web docker container
+# bespin_web_loaddata - loads the database associated with bespin-web with data based on bespin_settings
+# bespin_web_server- creates/updates the webserver docker container
 
-- name: Place SSL private key
-  copy: src="../../../files/{{ bespin_settings.web.ssl_cert_file }}" dest="{{ bespin_settings.web.ssl_dir }}/cacert.pem"
-        mode=400
+- name: Setup bespin web vars
+  include_tasks: setup-environment.yml
+  tags:
+  - bespin_web_loaddata
+  - bespin_web_server
 
-- name: Place SSL Certificate
-  copy: src="../../../files/{{ bespin_settings.web.ssl_key_file }}" dest="{{ bespin_settings.web.ssl_dir }}/privkey.pem"
-        mode=400
+- name: Load static data
+  include_tasks: loaddata.yml
+  tags: bespin_web_loaddata
 
-- set_fact:
-    web_environment: "{{ web_environment|default({}) | combine(item) }}"
-  with_items:
-    - POSTGRES_USER: "{{ bespin_settings.database.username }}"
-    - POSTGRES_PASSWORD: "{{ bespin_settings.database.password }}"
-    - POSTGRES_DB: "{{ bespin_settings.database.name }}"
-    - BESPIN_SECRET_KEY: "{{ bespin_settings.web.secret_key }}"
-    - BESPIN_ALLOWED_HOST: "{{ bespin_settings.web.allowed_host }}"
-    - BESPIN_CORS_HOST: "{{ bespin_settings.web.cors_host }}"
-    - BESPIN_DB_HOST: "{{ bespin_settings.database.host }}"
-    - BESPIN_SERVER_NAME: "{{bespin_settings.web.server_name}}"
-    - BESPIN_SMTP_HOST: "{{bespin_settings.mailer.smtp_host}}"
-    - BESPIN_MAILER_EMAIL: "{{bespin_settings.mailer.email}}"
-    - BESPIN_MAILER_ADMIN_BCC: "{{bespin_settings.mailer.admin_bcc}}"
-    - LANDO_DJANGO_USERNAME: "{{ bespin_settings.web.lando_username }}"
-    - LANDO_DJANGO_PASSWORD: "{{ bespin_settings.web.lando_password }}"
-    - LANDO_DJANGO_TOKEN: "{{ bespin_settings.web.lando_token }}"
-    - GROUP_MANAGER_ACCOUNT_ID: "{{ bespin_settings.web.group_manager_account_id }}"
-    - GROUP_MANAGER_PASSWORD: "{{ bespin_settings.web.group_manager_password }}"
-    - RABBIT_HOST: "{{ bespin_settings.rabbit.host }}"
-    - RABBIT_USERNAME: "{{ bespin_settings.rabbit.username }}"
-    - RABBIT_PASSWORD: "{{ bespin_settings.rabbit.password }}"
-    - RABBIT_QUEUENAME: "{{ bespin_settings.rabbit.listen_queue }}"
-
-- name: Create app container
-  docker_container:
-    image: dukegcb/bespin-web
-    name: bespin-web
-    env: "{{ web_environment }}"
-    volumes:
-      - /etc/external/:/etc/external/
-    ports:
-      - "80:80"
-      - "443:443"
-    pull: true
-    etc_hosts: "{{ bespin_hosts_list }}"
-    state: started
-    restart_policy: always
+- name: Run web server
+  include_tasks: run-server.yml
+  tags: bespin_web_server

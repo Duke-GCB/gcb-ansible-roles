@@ -9,25 +9,52 @@
     - unzip
     - tcsh
     - evince
-    - firefox
+    - firefox-38.7.0-1.el7_2
+    - xorg-x11-xauth
+    - xorg-x11-apps
+    - xorg-x11-xinit
     - gedit
     - gedit-plugins
     - inkscape
     - ImageMagick
     - mesa-libGL
     - mesa-libGLU
-    - java-1.8.0-openjdk-headless
+    - java-1.8.0-openjdk
     - python-pip
+    - python-devel
     - nfs-utils
+    - libxml2-devel
+    - curl-devel
     - R
     - samtools
 # for ansible >=2.4, use allow_downgrade and specify versions for R and samtools
+- name: Exclude firefox from yum updates
+  become: yes
+  lineinfile:
+    dest: /etc/yum.conf
+    insertafter: '^installonly_limit='
+    line: 'exclude=firefox*'
+- name: Fix sshd_config for X11UseLocalhost
+  become: yes
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^#X11UseLocalhost'
+    line: 'X11UseLocalHost no'
+- name: Fix sshd_config for X11DisplayOffset
+  become: yes
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^#X11DisplayOffset'
+    line: 'X11DisplayOffset 10'
 - name: Install cran packages for R
   become: yes
-  command: /usr/bin/Rscript -e "install.packages(pkgs='ggplot2', repos=c('http://archive.linux.duke.edu/cran/'))"
+  command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos=c('http://archive.linux.duke.edu/cran/'))"
 - name: Install bioconductor packages for R
   become: yes
   command: /usr/bin/Rscript -e "source('http://bioconductor.org/biocLite.R'); biocLite('DESeq2')"
+- name: Install QoRTs R package
+  become: yes
+  command: /usr/bin/Rscript -e "install.packages('http://hartleys.github.io/QoRTs/QoRTs_STABLE.tar.gz',repos=NULL,type='source');"
 - name: Install STAR
   become: yes
   git:
@@ -64,11 +91,25 @@
     path: /etc/profile.d/fastqc.sh
     mode: 0644
     block: export PATH=/opt/FastQC:$PATH
+- name: Upgrade pip
+  become: yes
+  pip:
+    name: pip
+    extra_args: --upgrade
 - name: Install cutadapt
   become: yes
   pip:
     name: cutadapt
     version: 1.14
+- name: Install development version of MultiQC
+  become: yes
+  pip:
+    name: git+https://github.com/ewels/MultiQC.git#egg=multiqc
+    extra_args: --upgrade --force-reinstall
+- name: Install HTSeq
+  become: yes
+  pip:
+    name: HTSeq
 - name: Create TrimGalore directory
   become: yes
   file: path=/opt/TrimGalore state=directory mode=0755
@@ -93,4 +134,15 @@
 - name: Symlink GSEA jar file to /opt/GSEA/gsea-3.0.jar
   become: yes
   file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
-
+- name: Create QoRTs directory
+  become: yes
+  file: path=/opt/QoRTs state=directory mode=0755
+- name: Install QoRTs .jar file
+  become: yes
+  get_url:
+    url: http://hartleys.github.io/QoRTs/QoRTs-STABLE.jar
+    dest: /opt/QoRTs/QoRTs-STABLE.jar
+    mode: 0555
+- name: Create /work directory
+  become: yes
+  file: path=/work state=directory mode=0777 recurse=yes
