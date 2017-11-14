@@ -21,7 +21,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 start() {
     cd {{hook_build_dir}}/hook-build
-    daemon "$DAEMON $DAEMON_ARGS" > /var/log/hook-build.log 2>&1 &
+    daemon --user=hook-build "$DAEMON $DAEMON_ARGS" > /var/log/hook-build.log 2>&1 &
 }
 
 stop() {
