@@ -1,0 +1,52 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          hook-build
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start hook-build
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Runs service that builds environment modules in response to a github webhook request"
+NAME=hook-build
+DAEMON=/usr/bin/hook-build-service
+DAEMON_ARGS=""
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Source function library.
+. /etc/init.d/functions
+
+start() {
+    cd {{hook_build_dir}}/hook-build
+    daemon "$DAEMON $DAEMON_ARGS" > /var/log/hook-build.log 2>&1 &
+}
+
+stop() {
+    # code to stop app comes here
+    # example: killproc program_name
+    killproc $DAEMON
+}
+
+case "$1" in
+    start)
+       start
+       ;;
+    stop)
+       stop
+       ;;
+    restart)
+       stop
+       start
+       ;;
+    status)
+       status $DAEMON
+       ;;
+    *)
+       echo "Usage: $0 {start|stop|status|restart}"
+esac
+
+exit 0
+

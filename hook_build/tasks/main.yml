@@ -1,0 +1,41 @@
+- name: clone hook-build repo
+  git:
+    repo: 'https://github.com/Duke-GCB/hook-build.git'
+    dest: "{{hook_build_dir}}/hook-build"
+  become_user: hook-build
+
+- name: Update packages based on hook-build package.json
+  npm:
+    path: "{{hook_build_dir}}/hook-build"
+    state: latest
+  become_user: hook-build
+
+- name: Clone helmod repo
+  git:
+    repo: 'https://github.com/Duke-GCB/helmod.git'
+    dest: "{{hook_build_dir}}/helmod"
+  become_user: hook-build
+
+- name: Create required helmod BUILD directory
+  file:
+    path: "{{hook_build_dir}}/hook-build/rpmbuild/BUILD"
+    state: directory
+    mode: 0700
+
+- name: place script that is run by daemon from /etc/init.d/hook-build
+  template: src=hook-build-service.j2 dest=/usr/bin/hook-build-service mode=700 owner=hook-build group=root
+
+- name: place script that is run to build a module
+  template: src=build-module.sh.j2 dest="{{hook_build_dir}}/build-module.sh" mode=700 owner=hook-build group=root
+
+- name: Install hook-build init script
+  template: src=hook-build-init.j2 dest=/etc/init.d/hook-build mode=700 owner=root group=root
+
+- name: Place SSL private key
+  copy: src=../../../files/hook-build.key dest=/etc/pki/tls/private/hook-build.key
+
+- name: Place SSL Certificate
+  copy: src=../../../files/hook-build.crt dest=/etc/pki/tls/certs/hook-build.crt
+
+- name: start hook-build init script
+  service: name=hook-build enabled=yes state=restarted
