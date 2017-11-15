@@ -22,9 +22,6 @@
     state: directory
     mode: 0700
 
-- name: place script that is run by daemon from /etc/init.d/hook-build
-  template: src=hook-build-service.j2 dest=/usr/bin/hook-build-service mode=700 owner=hook-build group=root
-
 - name: place script that is run to build a module
   template: src=build-module.sh.j2 dest="{{hook_build_dir}}/build-module.sh" mode=700 owner=hook-build group=root
 

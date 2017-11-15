@@ -1,7 +1,0 @@
-sudo \
-  KEYPATH=/etc/pki/tls/private/hook-build.key \
-  CERTPATH=/etc/pki/tls/certs/hook-build.crt \
-  MESSAGE_REGEX={{github_message_regex}} \
-  GITHUB_KEY={{github_key}} \
-  ON_RELEASE_CMD={{hook_build_dir}}/build-module.sh \
-  node index.js
