@@ -18,7 +18,7 @@
 
 - name: Create required helmod BUILD directory
   file:
-    path: "{{hook_build_dir}}/hook-build/rpmbuild/BUILD"
+    path: "{{hook_build_dir}}/helmod/rpmbuild/BUILD"
     state: directory
     mode: 0700
 
