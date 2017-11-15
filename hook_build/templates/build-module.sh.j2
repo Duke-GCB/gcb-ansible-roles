@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+MESSAGE=$1
+NAME=$2
+VERSION=$3
+RELEASE=$4
+set -e
+export BASH_ENV={{bash_env}}
+cd {{hook_build_dir}}
+./helmod/bin/build_new_module.sh $NAME $VERSION
