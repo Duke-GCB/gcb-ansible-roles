@@ -40,3 +40,4 @@
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
+    restart: true
