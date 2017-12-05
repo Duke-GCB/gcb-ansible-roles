@@ -19,7 +19,7 @@
   docker_container:
     command: "python manage.py {{ item }}"
     name: bespin-loaddata
-    image: dukegcb/bespin-web
+    image: "dukegcb/bespin-api:{{ bespin_settings.web.version }}-apache"
     pull: true
     state: started
     detach: false
@@ -37,7 +37,7 @@
   docker_container:
     command: "python manage.py loaddata {{ bespin_settings.web.fixture_directory }}/{{ item }}"
     name: bespin-loaddata
-    image: dukegcb/bespin-web
+    image: "dukegcb/bespin-api:{{ bespin_settings.web.version }}-apache"
     pull: true
     state: started
     detach: false
