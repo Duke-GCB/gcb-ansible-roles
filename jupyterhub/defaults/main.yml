@@ -6,3 +6,4 @@ slurm_partition: "all"
 slurm_account: ""
 req_runtime: 120
 req_memory: 4096
+jupyterhub_version: "0.8.0"
