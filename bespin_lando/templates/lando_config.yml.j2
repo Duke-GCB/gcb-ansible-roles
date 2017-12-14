@@ -6,11 +6,11 @@ work_queue:
   worker_username: "{{ bespin_settings.rabbit.worker_username }}"
   worker_password: "{{ bespin_settings.rabbit.worker_password }}"
 cloud_settings:
-  auth_url: "{{ bespin_settings.worker_openstack.auth_url }}"
-  username: "{{ bespin_settings.worker_openstack.username }}"
-  password: "{{ bespin_settings.worker_openstack.password }}"
-  user_domain_name: "{{ bespin_settings.worker_openstack.user_domain_name }}"
-  project_domain_name: "{{ bespin_settings.worker_openstack.project_domain_name }}"
+  auth_url: "{{ bespin_settings.lando.auth_url }}"
+  username: "{{ bespin_settings.lando.username }}"
+  password: "{{ bespin_settings.lando.password }}"
+  user_domain_name: "{{ bespin_settings.lando.user_domain_name }}"
+  project_domain_name: "{{ bespin_settings.lando.project_domain_name }}"
 bespin_api:
   url: "{{ bespin_settings.web.url }}"
   token: "{{ bespin_settings.web.lando_token }}"
