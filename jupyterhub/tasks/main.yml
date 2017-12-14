@@ -123,7 +123,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: Install Jupyter via pip
-  pip: executable="{{ pip_executable }}" name=jupyter extra_args='--upgrade'
+  pip: executable="{{ pip_executable }}" name=jupyter version="{{ jupyter_version }}" extra_args='--upgrade'
   tags: jupyter-deps
 
 - name: install jupyterhub via pip
