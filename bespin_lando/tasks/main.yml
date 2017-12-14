@@ -5,7 +5,7 @@
 
 - name: Create app container
   docker_container:
-    image: dukegcb/bespin-lando:92-per-job-vm-details
+    image: dukegcb/bespin-lando
     name: bespin-lando
     volumes:
       - /etc/lando_config.yml:/etc/lando_config.yml
