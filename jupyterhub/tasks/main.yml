@@ -122,13 +122,13 @@
     pip_executable: "/usr/bin/pip3"
   when: ansible_os_family == 'Debian'
 
-
-- name: install jupyter, jupyterhub via pip
-  pip: executable="{{ pip_executable }}" name={{item}} extra_args='--upgrade'
+- name: Install Jupyter via pip
+  pip: executable="{{ pip_executable }}" name=jupyter version="{{ jupyter_version }}" extra_args='--upgrade'
   tags: jupyter-deps
-  with_items:
-  - jupyter
-  - jupyterhub
+
+- name: install jupyterhub via pip
+  pip: executable="{{ pip_executable }}" name=jupyterhub version="{{ jupyterhub_version }}" extra_args='--upgrade'
+  tags: jupyter-deps
 
 - name: install sudospawner via pip
   pip: executable={{pip_executable}} name=sudospawner
