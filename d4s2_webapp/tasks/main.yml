@@ -25,3 +25,8 @@
     pull: true
     state: started
     restart_policy: always
+- name: Open firewall
+  firewalld:
+    service: https
+    permanent: true
+    state: enabled
