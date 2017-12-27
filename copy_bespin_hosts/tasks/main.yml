@@ -1,12 +1,19 @@
-- copy:
-    src: /etc/hosts
-    dest: /etc/hosts
-    mode: 0644
+- name: Determine bespin hostnames based on environment (dev vs prod)
+  set_fact:
+    bespin_hosts: |
+      {{ hostvars['bespin_' + bespin_env + '_rabbit']['ansible_host'] }} bespin-{{ bespin_env }}-rabbit
+      {{ hostvars['bespin_' + bespin_env + '_web']['ansible_host'] }} bespin-{{ bespin_env }}-web
+      {{ hostvars['bespin_' + bespin_env + '_lando']['ansible_host'] }} bespin-{{ bespin_env }}-lando
+      {{ hostvars['bespin_' + bespin_env + '_database']['ansible_host'] }} bespin-{{ bespin_env }}-database
+      {{ hostvars['bespin_' + bespin_env + '_nfs']['ansible_host'] }} bespin-{{ bespin_env }}-nfs
+      {{ hostvars['bespin_' + bespin_env + '_job_watcher']['ansible_host'] }} bespin-{{ bespin_env }}-job-watcher
 
-- command: grep 'bespin-' /etc/hosts
-  register: bespin_hosts
+- name: Add bespin hosts to /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    block: "{{bespin_hosts}}"
 
 - name: Populate bespin_hosts_list
   set_fact:
     bespin_hosts_list: "{{ bespin_hosts_list|default({}) | combine( {item.split()[1]: item.split()[0]} ) }}"
-  with_items: "{{bespin_hosts.stdout_lines}}"
+  with_items: "{{bespin_hosts.splitlines()}}"
