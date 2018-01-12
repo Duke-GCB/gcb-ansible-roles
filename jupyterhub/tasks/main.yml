@@ -267,6 +267,7 @@
     path: '/etc/jupyterhub/jupyterhub_config.py'
     marker: "# {mark} ANSIBLE MANAGED SLURM CONFIG"
     block: |
+      c.Spawner.args = ['--NotebookApp.iopub_data_rate_limit=1000000000']
       c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
       c.BatchSpawnerBase.req_runtime = '{{ req_runtime }}'
       c.BatchSpawnerBase.req_memory = '{{ req_memory }}'
