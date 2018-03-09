@@ -9,4 +9,4 @@ hpc:
     - libicu
     - libXp
     - kpathsea
-    
+    - readline-devel
