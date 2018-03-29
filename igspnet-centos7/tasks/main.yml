@@ -1,0 +1,42 @@
+---
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+# Need mod_perl, which isn't available directly in CentOS. so install epel
+- name: Install epel for mod_perl
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install other yum dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mod_perl
+    - mod_ssl
+    - libapreq2
+    - perl-CGI
+    - perl-DBI
+
+- name: Install development tools
+  yum:
+    name: "@Development Tools"
+    state: present
+
+- name: Install httpd-devel and mod_perl devel
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - perl-devel
+    - perl-CPAN
+    - httpd-devel
+    - mod_perl-devel
+
+- name: Install cpanm
+  shell: "curl -L http://cpanmin.us | perl - App::cpanminus"
+
+# TODO: Install cpanm modules
