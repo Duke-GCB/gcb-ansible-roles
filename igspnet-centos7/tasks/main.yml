@@ -26,7 +26,7 @@
     name: "@Development Tools"
     state: present
 
-- name: Install httpd-devel and mod_perl devel
+- name: Install development libs
   yum:
     name: "{{ item }}"
     state: present
@@ -35,6 +35,7 @@
     - perl-CPAN
     - httpd-devel
     - mod_perl-devel
+    - krb5-devel
 
 - name: Install cpanm
   shell: "curl -L http://cpanmin.us | perl - App::cpanminus"
@@ -69,7 +70,7 @@
     - Task::Catalyst
     - DateTime::Format::Oracle
 
-- name: Install Catalyst plugins
+- name: Install Catalyst plugins and other dependencies
   cpanm:
     name: "{{item}}"
   with_items:
@@ -81,6 +82,7 @@
     - Catalyst::View::Mason
     - Catalyst::Controller::HTML::FormFu
     - YAML::Syck
+    - Authen::Krb5::Simple
 
 # Some cpanm modules fail to install due to bogus test failures:
 #   Failed test at t/012-configuration-pathing.t line 21.
@@ -111,7 +113,10 @@
   file:
     path: /var/log/httpd/ssl_mutex
     state: directory
-    mode: 0755
+#    mode: 0755
+#    owner: apache
+#    group: apache
+#    setype: httpd_log_t
 
 - name: Check if original httpd.conf has been moved
   stat: path=/etc/httpd/conf/httpd.conf.dist
@@ -148,12 +153,12 @@
     group: apache
 
 - name: Place SSL certificate
-  copy: content="../../../files/igspnet.genome.duke.edu.crt"
+  copy: src="../../../files/igspnet.genome.duke.edu.crt"
         dest="/var/www/conf/ssl-certs/igspnet.genome.duke.edu.crt"
         mode=400
 
 - name: Place SSL private key
-  copy: content="../../../files/igspnet.genome.duke.edu.key"
+  copy: src="../../../files/igspnet.genome.duke.edu.key"
         dest="/var/www/conf/ssl-keys/igspnet.genome.duke.edu.key"
         mode=400
 
