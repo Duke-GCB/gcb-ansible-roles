@@ -69,6 +69,35 @@
     - Task::Catalyst
     - DateTime::Format::Oracle
 
+- name: Install Catalyst plugins
+  cpanm:
+    name: "{{item}}"
+  with_items:
+    - Log::Handler
+    - Catalyst::Plugin::Log::Handler
+    - Catalyst::Plugin::Email
+    - Catalyst::Plugin::Authorization::ACL
+    - Catalyst::Model::LDAP
+    - Catalyst::View::Mason
+    - Catalyst::Controller::HTML::FormFu
+    - YAML::Syck
+
+# Some cpanm modules fail to install due to bogus test failures:
+#   Failed test at t/012-configuration-pathing.t line 21.
+#          got: 'function calculate(){return 1*30/23;}
+# var auto=8+4;alert("Automatically "+auto);var apple=1+4;alert("Apple is "+apple);
+# '
+#     expected: 'function calculate(){return 1*30/23;}
+# var auto=8+4;alert("Automatically "+auto);var apple=1+4;alert("Apple is "+apple);'
+# Looks like you failed 1 test of 5.
+
+- name: Install catalyst plugins that fail tests
+  cpanm:
+    name: "{{item}}"
+    notest: true
+  with_items:
+    - Catalyst::Plugin::Assets
+
 # this is really slow
 #- name: Place www directory
 #  copy:
@@ -110,6 +139,13 @@
   with_items:
     - "ssl-certs"
     - "ssl-keys"
+
+- name: Ensure log directory exists
+  file:
+    path: "/var/log/igspnet/"
+    state: directory
+    owner: apache
+    group: apache
 
 - name: Place SSL certificate
   copy: content="../../../files/igspnet.genome.duke.edu.crt"
