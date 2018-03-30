@@ -39,4 +39,33 @@
 - name: Install cpanm
   shell: "curl -L http://cpanmin.us | perl - App::cpanminus"
 
-# TODO: Install cpanm modules
+
+- name: Include /usr/local/bin in sudoers path
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^Defaults    secure_path'
+    line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin'
+    validate: '/usr/sbin/visudo -cf %s'
+
+- name: Install modules via cpanm
+  cpanm:
+    name: "{{item}}"
+  with_items:
+    - Apache::DBI
+    - Apache2::Cookie
+
+- name: Install Catalyst dependencies via cpanm
+  cpanm:
+    name: "{{item}}"
+  with_items:
+    - DBIx::Class
+    - MooseX::Daemonize
+
+- name: Install Catalyst via cpanm
+  cpanm:
+    name: "{{item}}"
+  with_items:
+    - Catalyst::Devel
+    - Task::Catalyst
+    - DateTime::Format::Oracle
