@@ -109,33 +109,6 @@
 #    group: apache
 #    mode: 0755
 
-- name: Make Directory for SSL mutex
-  file:
-    path: /var/log/httpd/ssl_mutex
-    state: directory
-#    mode: 0755
-#    owner: apache
-#    group: apache
-#    setype: httpd_log_t
-
-- name: Check if original httpd.conf has been moved
-  stat: path=/etc/httpd/conf/httpd.conf.dist
-  register: httpd_conf_dist_stat
-
-- name: Print stat
-  debug:
-    msg: "{{ httpd_conf_dist_stat }}"
-
-- name: Move aside original httpd.conf
-  command: "mv /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.orig"
-  when: httpd_conf_dist_stat.stat.exists == False
-
-- name: Place the new httpd.conf
-  file:
-    src: /var/www/conf/httpd.conf
-    dest: /etc/httpd/conf/httpd.conf
-    state: link
-
 - name: Ensure ssl directories exist
   file:
     path: "/var/www/conf/{{item}}"
