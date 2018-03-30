@@ -39,7 +39,6 @@
 - name: Install cpanm
   shell: "curl -L http://cpanmin.us | perl - App::cpanminus"
 
-
 - name: Include /usr/local/bin in sudoers path
   lineinfile:
     path: /etc/sudoers
@@ -69,3 +68,58 @@
     - Catalyst::Devel
     - Task::Catalyst
     - DateTime::Format::Oracle
+
+# this is really slow
+#- name: Place www directory
+#  copy:
+#    src: /Users/dcl9/Code/docker/igspnet-docker/www
+#    dest: /var/www
+#    owner: apache
+#    group: apache
+#    mode: 0755
+
+- name: Make Directory for SSL mutex
+  file:
+    path: /var/log/httpd/ssl_mutex
+    state: directory
+    mode: 0755
+
+- name: Check if original httpd.conf has been moved
+  stat: path=/etc/httpd/conf/httpd.conf.dist
+  register: httpd_conf_dist_stat
+
+- name: Print stat
+  debug:
+    msg: "{{ httpd_conf_dist_stat }}"
+
+- name: Move aside original httpd.conf
+  command: "mv /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.orig"
+  when: httpd_conf_dist_stat.stat.exists == False
+
+- name: Place the new httpd.conf
+  file:
+    src: /var/www/conf/httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+    state: link
+
+- name: Ensure ssl directories exist
+  file:
+    path: "/var/www/conf/{{item}}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "ssl-certs"
+    - "ssl-keys"
+
+- name: Place SSL certificate
+  copy: content="../../../files/igspnet.genome.duke.edu.crt"
+        dest="/var/www/conf/ssl-certs/igspnet.genome.duke.edu.crt"
+        mode=400
+
+- name: Place SSL private key
+  copy: content="../../../files/igspnet.genome.duke.edu.key"
+        dest="/var/www/conf/ssl-keys/igspnet.genome.duke.edu.key"
+        mode=400
+
+- name: restart apache
+  systemd: state=restarted name=httpd
