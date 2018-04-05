@@ -11,3 +11,4 @@ hpc:
     - kpathsea
     - readline-devel
     - lzo-devel
+    - mysql-devel
