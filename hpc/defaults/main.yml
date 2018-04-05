@@ -10,3 +10,4 @@ hpc:
     - libXp
     - kpathsea
     - readline-devel
+    - lzo-devel
