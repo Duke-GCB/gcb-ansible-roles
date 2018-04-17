@@ -11,3 +11,4 @@
     - BESPIN_SMTP_HOST: "{{bespin_settings.mailer.smtp_host}}"
     - BESPIN_MAILER_EMAIL: "{{bespin_settings.mailer.email}}"
     - BESPIN_MAILER_ADMIN_BCC: "{{bespin_settings.mailer.admin_bcc}}"
+    - BESPIN_REQUIRED_GROUPMANAGER_GROUP: "{{bespin_settings.group_manager_required_group | default('')}}"
