@@ -16,6 +16,7 @@
 # since the fixtures depend on a "lando" user with id 1.
 
 - name: Specific Load Commands
+  ignore_errors: yes
   docker_container:
     command: "python manage.py {{ item }}"
     name: bespin-loaddata
@@ -34,6 +35,7 @@
     - "makeusertoken {{ bespin_settings.web.lando_username }} {{ bespin_settings.web.lando_password }} {{ bespin_settings.web.lando_token }}"
 
 - name: Load Fixtures
+  ignore_errors: yes
   docker_container:
     command: "python manage.py loaddata {{ bespin_settings.web.fixture_directory }}/{{ item }}"
     name: bespin-loaddata
