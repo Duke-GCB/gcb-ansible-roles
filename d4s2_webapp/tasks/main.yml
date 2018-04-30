@@ -3,8 +3,8 @@
     image: postgres:9.5
     name: db
     networks:
-      - name: "{{ d4s2_config.network }}"
-    env: "{{ d4s2_config.env }}"
+      - name: "{{ d4s2_docker_network }}"
+    env: "{{ d4s2_docker_env }}"
     volumes:
       - /var/lib/postgresql/data:/var/lib/postgresql/data
     pull: true
@@ -12,11 +12,11 @@
     restart_policy: always
 - name: Create app container
   docker_container:
-    image: dukegcb/d4s2-apache
+    image: "{{ d4s2_docker_image }}"
     name: web
     networks:
-      - name: "{{ d4s2_config.network }}"
-    env: "{{ d4s2_config.env }}"
+      - name: "{{ d4s2_docker_network }}"
+    env: "{{ d4s2_docker_env }}"
     volumes:
       - /etc/external/:/etc/external/
     ports:
