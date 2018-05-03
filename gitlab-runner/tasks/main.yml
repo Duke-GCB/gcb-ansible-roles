@@ -1,5 +1,12 @@
 - name: Add gitlab-runner user to docker group
   user:
-    name: gitlab-runner
+    name: "{{ user_name }}"
     groups: docker
     append: yes
+- name: Make .ssh directory
+  file: path="/home/{{ user_name }}/.ssh" state=directory mode=0700
+- name: Place ssh private key for gitlab runner
+  copy:
+    src: "{{ ssh_key_source_path }}"
+    dest: "/home/{{ user_name }}/.ssh/{{ ssh_key_dest_file_name }}"
+    mode: 0400

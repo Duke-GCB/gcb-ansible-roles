@@ -1,0 +1,3 @@
+user_name: gitlab-runner
+ssh_key_source_path: ''
+ssh_key_dest_file_name: id_rsa
