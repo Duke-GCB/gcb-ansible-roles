@@ -1,3 +1,9 @@
+- name: Login to docker registry
+  docker_login:
+    registry: "{{ docker_registry }}"
+    username: "{{ docker_username }}"
+    password: "{{ docker_password }}"
+  when: docker_registry is defined
 - name: Create Database container
   docker_container:
     image: postgres:9.5
