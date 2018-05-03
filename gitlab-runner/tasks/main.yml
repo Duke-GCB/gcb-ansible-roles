@@ -9,4 +9,6 @@
   copy:
     src: "{{ ssh_key_source_path }}"
     dest: "/home/{{ user_name }}/.ssh/{{ ssh_key_dest_file_name }}"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
     mode: 0400
