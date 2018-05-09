@@ -31,3 +31,14 @@
     pull: true
     state: started
     restart_policy: always
+- name: Create task processor container
+  docker_container:
+    image: "{{ d4s2_docker_image }}"
+    name: worker
+    networks:
+      - name: "{{ d4s2_config_network }}"
+    env: "{{ d4s2_config_env }}"
+    pull: true
+    state: started
+    restart_policy: always
+    command: python manage.py process_tasks
