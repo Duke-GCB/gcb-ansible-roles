@@ -25,3 +25,14 @@
     pull: true
     state: started
     restart_policy: always
+- name: Create task processor container
+  docker_container:
+    image: dukegcb/d4s2-apache
+    name: worker
+    networks:
+      - name: "{{ d4s2_config.network }}"
+    env: "{{ d4s2_config.env }}"
+    pull: true
+    state: started
+    restart_policy: always
+    command: python manage.py process_tasks
