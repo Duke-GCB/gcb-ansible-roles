@@ -36,8 +36,8 @@
     image: "{{ d4s2_docker_image }}"
     name: worker
     networks:
-      - name: "{{ d4s2_config_network }}"
-    env: "{{ d4s2_config_env }}"
+      - name: "{{ d4s2_docker_network }}"
+    env: "{{ d4s2_docker_env }}"
     pull: true
     state: started
     restart_policy: always
