@@ -12,3 +12,22 @@
     owner: "{{ user_name }}"
     group: "{{ user_name }}"
     mode: 0400
+- name: Install git-crypt and dependencies
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  with_items:
+    - openssl
+    - git
+    - gnupg
+    - git-crypt
+- name: Import gpg public key from file in ansible repo
+  command: "gpg --import"
+  args:
+    stdin: "{{ lookup('file', gpg_public_key_local_path) }}"
+  become_user: "{{ user_name }}"
+- name: Import gpg private key from file in ansible repo
+  command: "gpg --import"
+  args:
+    stdin: "{{ lookup('file', gpg_private_key_local_path) }}"
+  become_user: "{{ user_name }}"
