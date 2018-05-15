@@ -19,15 +19,18 @@
   with_items:
     - openssl
     - git
-    - gnupg
     - git-crypt
-- name: Import gpg public key from file in ansible repo
-  command: "gpg --import"
-  args:
-    stdin: "{{ lookup('file', gpg_public_key_local_path) }}"
-  become_user: "{{ user_name }}"
-- name: Import gpg private key from file in ansible repo
-  command: "gpg --import"
-  args:
-    stdin: "{{ lookup('file', gpg_private_key_local_path) }}"
-  become_user: "{{ user_name }}"
+- name: Create .git-crypt directory for storing the symmetric key
+  file:
+    path: "/home/{{ user_name }}/.git-crypt/"
+    state: directory
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: 0700
+- name: Place git-crypt symmetric key for decrypting the ansible repo
+  copy:
+    src: "{{ git_crypt_key_source_path }}"
+    dest: "/home/{{ user_name }}/.git-crypt/{{ git_crypt_key_dest_file_name }}"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: 0400
