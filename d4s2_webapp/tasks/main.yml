@@ -19,15 +19,10 @@
 - name: Create app container
   docker_container:
     image: "{{ d4s2_docker_image }}"
-    name: web
+    name: api
     networks:
       - name: "{{ d4s2_docker_network }}"
     env: "{{ d4s2_docker_env }}"
-    volumes:
-      - /etc/external/:/etc/external/
-    ports:
-      - "80:80"
-      - "443:443"
     pull: true
     state: started
     restart_policy: always
@@ -42,3 +37,19 @@
     state: started
     restart_policy: always
     command: python manage.py process_tasks
+- name: Create reverse proxy container
+  docker_container:
+    image: nginx:1.13
+    name: revproxy
+    networks:
+      - name: "{{ d4s2_docker_network }}"
+    volumes:
+      - "{{ docker_webapp.nginx_conf_dir }}{{ docker_webapp.nginx_conf_file }}:/etc/nginx/nginx.conf:ro"
+      - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_cert_file }}:/etc/nginx/cert.crt:ro"
+      - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_key_file }}:/etc/nginx/cert.key:ro"
+    ports:
+      - "80:80"
+      - "443:443"
+    pull: true
+    state: started
+    restart_policy: always

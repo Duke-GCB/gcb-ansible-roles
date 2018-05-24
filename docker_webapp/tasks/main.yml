@@ -14,6 +14,14 @@
         mode=400
         setype="svirt_sandbox_file_t"
   when: "{{ docker_webapp.ssl_key_file is defined }}"
+- name: Make nginx directory
+  file: path={{ docker_webapp.nginx_conf_dir }} state=directory
+  when: "{{ docker_webapp.nginx_conf_dir is defined}}"
+- name: Place nginx conf
+  copy: content="{{ docker_webapp.nginx_conf }}"
+        dest="{{ docker_webapp.nginx_conf_dir }}/{{ docker_webapp.nginx_conf_file }}"
+        mode=0400
+        setype="svirt_sandbox_file_t"
 - name: Make shibboleth directory
   file: path={{ docker_webapp.shib_dir }} state=directory
   when: "{{ docker_webapp.shib_dir is defined}}"
