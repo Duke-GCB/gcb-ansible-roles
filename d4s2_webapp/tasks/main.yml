@@ -1,3 +1,10 @@
+- name: Make nginx directory
+  file: path={{ d4s2_nginx_conf_dir }} state=directory
+- name: Place nginx conf
+  copy: src="{{ d4s2_nginx_conf_file }}"
+        dest="{{ d4s2_nginx_conf_dir }}/{{ d4s2_nginx_conf_file }}"
+        mode=0400
+        setype="svirt_sandbox_file_t"
 - name: Login to docker registry
   docker_login:
     registry: "{{ docker_registry }}"

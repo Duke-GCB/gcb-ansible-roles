@@ -1,0 +1,2 @@
+d4s2_nginx_conf_dir: /etc/external/nginx
+d4s2_nginx_conf_file: nginx.conf
