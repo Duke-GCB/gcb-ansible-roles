@@ -51,7 +51,7 @@
     networks:
       - name: "{{ d4s2_docker_network }}"
     volumes:
-      - "{{ docker_webapp.nginx_conf_dir }}/{{ docker_webapp.nginx_conf_file }}:/etc/nginx/nginx.conf:ro"
+      - "{{ d4s2_nginx_conf_dir }}/{{ d4s2_nginx_conf_file }}:/etc/nginx/nginx.conf:ro"
       - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_cert_file }}:/etc/nginx/cert.crt:ro"
       - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_key_file }}:/etc/nginx/cert.key:ro"
     ports:
