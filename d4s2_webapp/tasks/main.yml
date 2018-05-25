@@ -1,8 +1,8 @@
 - name: Make nginx directory
-  file: path={{ d4s2_nginx_conf_dir }} state=directory
+  file: path={{ d4s2_nginx.conf_dir }} state=directory
 - name: Place nginx conf
-  copy: src="{{ d4s2_nginx_conf_file }}"
-        dest="{{ d4s2_nginx_conf_dir }}/{{ d4s2_nginx_conf_file }}"
+  copy: src="{{ d4s2_nginx.conf_file }}"
+        dest="{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}"
         mode=0400
         setype="svirt_sandbox_file_t"
 - name: Login to docker registry
@@ -51,7 +51,7 @@
     networks:
       - name: "{{ d4s2_docker_network }}"
     volumes:
-      - "{{ d4s2_nginx_conf_dir }}/{{ d4s2_nginx_conf_file }}:/etc/nginx/nginx.conf:ro"
+      - "{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}:/etc/nginx/nginx.conf:ro"
       - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_cert_file }}:/etc/nginx/cert.crt:ro"
       - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_key_file }}:/etc/nginx/cert.key:ro"
     ports:
