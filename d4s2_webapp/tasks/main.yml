@@ -1,3 +1,10 @@
+- name: Make nginx directory
+  file: path={{ d4s2_nginx.conf_dir }} state=directory
+- name: Place nginx conf
+  copy: src="{{ d4s2_nginx.conf_file }}"
+        dest="{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}"
+        mode=0400
+        setype="svirt_sandbox_file_t"
 - name: Login to docker registry
   docker_login:
     registry: "{{ docker_registry }}"
@@ -19,15 +26,10 @@
 - name: Create app container
   docker_container:
     image: "{{ d4s2_docker_image }}"
-    name: web
+    name: d4s2-app
     networks:
       - name: "{{ d4s2_docker_network }}"
     env: "{{ d4s2_docker_env }}"
-    volumes:
-      - /etc/external/:/etc/external/
-    ports:
-      - "80:80"
-      - "443:443"
     pull: true
     state: started
     restart_policy: always
@@ -42,3 +44,19 @@
     state: started
     restart_policy: always
     command: python manage.py process_tasks
+- name: Create reverse proxy web container
+  docker_container:
+    image: nginx:1.13
+    name: web
+    networks:
+      - name: "{{ d4s2_docker_network }}"
+    volumes:
+      - "{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}:/etc/nginx/nginx.conf:ro"
+      - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_cert_file }}:/etc/nginx/cert.crt:ro"
+      - "{{ docker_webapp.ssl_dir }}/{{ docker_webapp.ssl_key_file }}:/etc/nginx/cert.key:ro"
+    ports:
+      - "80:80"
+      - "443:443"
+    pull: true
+    state: started
+    restart_policy: always
