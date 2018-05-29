@@ -2,7 +2,7 @@
 
 Ansible role for deploying [D4S2](https://github.com/Duke-GCB/d4s2/)
 
-This role installs 4 docker containersto run the datadelivery web application:
+This role installs 4 docker containers to run the datadelivery web application:
 
 - **db** - PostgreSQL database
 - **app** - D4S2 Django Web Application
