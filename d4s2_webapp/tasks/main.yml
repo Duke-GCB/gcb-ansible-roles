@@ -44,6 +44,17 @@
     state: started
     restart_policy: always
     command: python manage.py process_tasks
+- name: Build UI image
+  docker_image:
+    path: "{{ datadelivery_ui_repo }}"
+    name: datadelivery-ui
+- name: Create UI container
+    image: datadelivery-ui
+    name: ui
+    networks:
+      - name: "{{ d4s2_docker_network }}"
+    state: started
+    restart_policy: always
 - name: Create reverse proxy web container
   docker_container:
     image: nginx:1.13
