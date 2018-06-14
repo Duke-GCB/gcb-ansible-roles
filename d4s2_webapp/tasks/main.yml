@@ -49,6 +49,7 @@
     path: "{{ datadelivery_ui_repo }}"
     name: datadelivery-ui
 - name: Create UI container
+  docker_container:
     image: datadelivery-ui
     name: ui
     networks:
