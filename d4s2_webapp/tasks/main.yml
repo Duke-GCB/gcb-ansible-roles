@@ -1,16 +1,19 @@
 - name: Make nginx directory
   file: path={{ d4s2_nginx.conf_dir }} state=directory
+  tags: ['api','ui']
 - name: Place nginx conf
   copy: src="{{ d4s2_nginx.conf_file }}"
         dest="{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}"
         mode=0400
         setype="svirt_sandbox_file_t"
+  tags: ['api','ui']
 - name: Login to docker registry
   docker_login:
     registry: "{{ docker_registry }}"
     username: "{{ docker_username }}"
     password: "{{ docker_password }}"
   when: docker_registry is defined
+  tags: ['api','ui']
 - name: Create Database container
   docker_container:
     image: postgres:9.5
@@ -23,6 +26,7 @@
     pull: true
     state: started
     restart_policy: always
+  tags: ['api']
 - name: Create app container
   docker_container:
     image: "{{ d4s2_docker_image }}"
@@ -33,6 +37,7 @@
     pull: true
     state: started
     restart_policy: always
+  tags: ['api']
 - name: Create task processor container
   docker_container:
     image: "{{ d4s2_docker_image }}"
@@ -44,18 +49,16 @@
     state: started
     restart_policy: always
     command: python manage.py process_tasks
-- name: Build UI image
-  docker_image:
-    path: "{{ datadelivery_ui_repo }}"
-    name: datadelivery-ui
+  tags: ['api']
 - name: Create UI container
   docker_container:
-    image: datadelivery-ui
+    image: "{{ datadelivery_ui_docker_image }}"
     name: ui
     networks:
       - name: "{{ d4s2_docker_network }}"
     state: started
     restart_policy: always
+  tags: ['ui']
 - name: Create reverse proxy web container
   docker_container:
     image: nginx:1.13
@@ -72,3 +75,4 @@
     pull: true
     state: started
     restart_policy: always
+  tags: ['api','ui']
