@@ -1,4 +1,3 @@
-datadelivery_ui_repo: https://github.com/Duke-GCB/datadelivery-ui.git
 d4s2_nginx:
   conf_dir: /etc/external/nginx
   conf_file: nginx.conf
