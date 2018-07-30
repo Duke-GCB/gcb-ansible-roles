@@ -12,3 +12,4 @@ hpc:
     - readline-devel
     - lzo-devel
     - mysql-devel
+    - squashfs-tools
