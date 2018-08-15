@@ -13,3 +13,5 @@ hpc:
     - lzo-devel
     - mysql-devel
     - squashfs-tools
+    - singularity
+    
