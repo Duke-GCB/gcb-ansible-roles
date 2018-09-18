@@ -20,8 +20,6 @@
     state: started
     detach: false
     env: "{{ d4s2_docker_env }}"
-    volumes:
-      - /etc/external/:/etc/external/
 
 - name: Load Fixtures
   ignore_errors: yes
@@ -34,7 +32,6 @@
     detach: false
     env: "{{ d4s2_docker_env }}"
     volumes:
-      - /etc/external/:/etc/external/
       - "{{ fixture_directory }}:{{ fixture_directory }}"
   with_items: "{{fixture_files}}"
 
