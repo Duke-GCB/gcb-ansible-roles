@@ -1,0 +1,44 @@
+- name: Make Fixture directory
+  file:
+    path: "{{ fixture_directory }}"
+    state: directory
+
+- name: Place fixture files
+  copy:
+    src: "../../../files/{{ item }}"
+    dest: "{{ fixture_directory }}/{{ item }}"
+    mode: 400
+  with_items: "{{fixture_files}}"
+
+- name: Specific Load Commands
+  ignore_errors: yes
+  docker_container:
+    command: "python manage.py migrate"
+    name: d4s2-loaddata
+    image: "{{ d4s2_docker_image }}"
+    pull: true
+    state: started
+    detach: false
+    env: "{{ d4s2_docker_env }}"
+    volumes:
+      - /etc/external/:/etc/external/
+
+- name: Load Fixtures
+  ignore_errors: yes
+  docker_container:
+    command: "python manage.py loaddata {{ fixture_directory }}/{{ item }}"
+    name: d4s2-loaddata
+    image: "{{ d4s2_docker_image }}"
+    pull: true
+    state: started
+    detach: false
+    env: "{{ d4s2_docker_env }}"
+    volumes:
+      - /etc/external/:/etc/external/
+      - "{{ fixture_directory }}:{{ fixture_directory }}"
+  with_items: "{{fixture_files}}"
+
+- name: Remove loaddata container
+  docker_container:
+    name: d4s2-loaddata
+    state: absent
