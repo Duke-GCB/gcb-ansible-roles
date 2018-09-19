@@ -13,13 +13,16 @@
 - name: Specific Load Commands
   ignore_errors: yes
   docker_container:
-    command: "python manage.py migrate"
+    command: "python manage.py {{ item }}"
     name: d4s2-loaddata
     image: "{{ d4s2_docker_image }}"
     pull: true
     state: started
     detach: false
     env: "{{ d4s2_docker_env }}"
+  with_items:
+    - "migrate"
+    - "createddsendpoint 'Duke Data Service' {d4s2_docker_env.D4S2_DDSCLIENT_URL} {d4s2_docker_env.D4S2_DDSCLIENT_PORTAL_ROOT} {d4s2_docker_env.D4S2_DDSCLIENT_AGENT_KEY} {d4s2_docker_env.D4S2_DDSCLIENT_OPENID_PROVIDER_ID}"
 
 - name: Load Fixtures
   ignore_errors: yes
