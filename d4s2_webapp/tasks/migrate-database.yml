@@ -1,0 +1,54 @@
+- name: Make Fixture directory
+  file:
+    path: "{{ fixture_directory }}"
+    state: directory
+
+- name: Place fixture files
+  copy:
+    src: "../../../files/{{ item }}"
+    dest: "{{ fixture_directory }}/{{ item }}"
+    mode: 400
+  with_items: "{{fixture_files}}"
+
+- name: Wait for postgres to become ready
+  docker_container:
+    command: "pg_isready -t 30 -h {d4s2_docker_env.POSTGRES_HOST}"
+    name: d4s2-loaddata
+    image: "{{ d4s2_docker_image }}"
+    pull: true
+    state: started
+    detach: false
+    env: "{{ d4s2_docker_env }}"
+
+- name: Specific Load Commands
+  ignore_errors: yes
+  docker_container:
+    command: "python manage.py {{ item }}"
+    name: d4s2-loaddata
+    image: "{{ d4s2_docker_image }}"
+    pull: true
+    state: started
+    detach: false
+    env: "{{ d4s2_docker_env }}"
+  with_items:
+    - "migrate"
+    - "createddsendpoint 'Duke Data Service' {d4s2_docker_env.D4S2_DDSCLIENT_URL} {d4s2_docker_env.D4S2_DDSCLIENT_PORTAL_ROOT} {d4s2_docker_env.D4S2_DDSCLIENT_AGENT_KEY} {d4s2_docker_env.D4S2_DDSCLIENT_OPENID_PROVIDER_ID}"
+
+- name: Load Fixtures
+  ignore_errors: yes
+  docker_container:
+    command: "python manage.py loaddata {{ fixture_directory }}/{{ item }}"
+    name: d4s2-loaddata
+    image: "{{ d4s2_docker_image }}"
+    pull: true
+    state: started
+    detach: false
+    env: "{{ d4s2_docker_env }}"
+    volumes:
+      - "{{ fixture_directory }}:{{ fixture_directory }}"
+  with_items: "{{fixture_files}}"
+
+- name: Remove loaddata container
+  docker_container:
+    name: d4s2-loaddata
+    state: absent

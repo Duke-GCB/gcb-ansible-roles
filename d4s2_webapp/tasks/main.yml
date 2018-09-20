@@ -27,6 +27,9 @@
     state: started
     restart_policy: always
   tags: ['api']
+- name: Migrate database
+  include_tasks: migrate-database.yml
+  tags: ['api']
 - name: Create app container
   docker_container:
     image: "{{ d4s2_docker_image }}"
