@@ -5,11 +5,11 @@
 
 - name: Create app container
   docker_container:
-    image: "dukegcb/bespin-lando:{{ bespin_settings.lando.version }}"
+    image: "lando-built-ansible:{{ bespin_settings.lando.version }}"
     name: bespin-lando
     volumes:
       - /etc/lando_config.yml:/etc/lando_config.yml
-    pull: true
+    pull: false
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always

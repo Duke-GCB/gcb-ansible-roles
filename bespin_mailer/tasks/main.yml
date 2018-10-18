@@ -10,10 +10,10 @@
 
 - name: Create app container
   docker_container:
-    image: dukegcb/bespin-mailer
+    image: "mailer-built-ansible:master"
     name: bespin-mailer
     env: "{{ web_environment }}"
-    pull: true
+    pull: false
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
