@@ -1,0 +1,61 @@
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install apt dependencies
+  apt:
+   name: "{{ packages }}"
+  vars:
+    packages:
+    - nfs-common
+    - libssl-dev
+
+- pip:
+    name: git+git://github.com/Duke-GCB/lando.git@{{ bespin_settings.lando.version }}
+    editable: false
+    executable: pip3
+
+- pip:
+    name: html5lib
+    executable: pip3
+
+- pip:
+    name: cwltool
+    version: {{ bespin_settings.lando.worker_cwltool_version }}
+    executable: pip3
+
+- file:
+    dest: /work
+    state: directory
+    owner: ubuntu
+    mode: 0744
+
+- name: Setup lando_worker service
+  blockinfile:
+    dest: /etc/systemd/system/lando_worker.service
+    create: yes
+    block: |
+      [Unit]
+      Description=Lando Service
+      After=multi-user.target
+      [Service]
+      Type=idle
+      ExecStart=/usr/local/bin/lando_worker
+      WorkingDirectory=/work
+      User=root
+      [Install]
+      WantedBy=multi-user.target
+
+- service:
+    name: lando_worker
+    state: started
+    enabled: yes
+
+- name: set mountpoints
+  mount:
+    name: /data
+    src: bespin-nfs:/mnt/bespin_datasets
+    fstype: nfs
+    opts: ro,sync,hard,intr
+    state: mounted
+
