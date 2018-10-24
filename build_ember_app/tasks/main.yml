@@ -1,0 +1,42 @@
+- name: Ensure directory exists for cloning git repo
+  file:
+    state: directory
+    path: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}"
+
+# Note that this checks out the git repo to a specific local directory based on the
+# provided image_name and version. it does not infer a subdirectory name from the
+# remote git repo like the default git mode. We must use a unique name here so that
+# one host can support distinct ember builds
+- name: Clone the Git repo at the provided version
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}"
+    version: "{{ version }}"
+
+- name: Run the ember build inside Docker
+  docker_container:
+    command: "{{ ember_build_cmd }}"
+    name: "ember-builder-{{ repo_name }}-{{ version }}"
+    image: "{{ ember_build_image }}"
+    state: started
+    detach: false
+    env: "{{ build_environment }}"
+    volumes:
+      - "{{ local_repo_root }}/{{ repo_name }}-{{ version }}:/src"
+    working_dir: "/src"
+
+- name: Remove loaddata container
+  docker_container:
+    name: "ember-builder-{{ repo_name }}-{{ version }}"
+    state: absent
+
+- name: Copy the default output directory (dist) to desired location
+  copy:
+    remote_src: true
+    src: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}/dist"
+    dest: "{{ target_directory }}"
+
+- name: Remove built artifact
+  file:
+    path: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}/dist"
+    state: absent
