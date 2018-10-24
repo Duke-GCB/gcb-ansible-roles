@@ -11,7 +11,7 @@
     - libssl-dev
 
 - pip:
-    name: git+git://github.com/Duke-GCB/lando.git@{{ bespin_settings.lando.version }}
+    name: git+git://github.com/Duke-GCB/lando.git@{{ bespin_worker.lando_version }}
     editable: false
     executable: pip3
 
@@ -21,11 +21,11 @@
 
 - pip:
     name: cwltool
-    version: {{ bespin_settings.lando.worker_cwltool_version }}
+    version: {{ bespin_worker.cwltool_version }}
     executable: pip3
 
 - file:
-    dest: /work
+    dest: {{ bespin_worker.work_directory }}
     state: directory
     owner: ubuntu
     mode: 0744
@@ -40,8 +40,8 @@
       After=multi-user.target
       [Service]
       Type=idle
-      ExecStart=/usr/local/bin/lando_worker
-      WorkingDirectory=/work
+      ExecStart={{ bespin_worker.path_to_lando_worker }}
+      WorkingDirectory={{ bespin_worker.work_directory }}
       User=root
       [Install]
       WantedBy=multi-user.target
@@ -53,8 +53,8 @@
 
 - name: set mountpoints
   mount:
-    name: /data
-    src: bespin-nfs:/mnt/bespin_datasets
+    name: {{ bespin_worker.mount_name }}
+    src: {{ bespin_worker.mount_src }}
     fstype: nfs
     opts: ro,sync,hard,intr
     state: mounted
