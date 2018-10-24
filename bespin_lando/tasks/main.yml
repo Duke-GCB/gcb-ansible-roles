@@ -5,7 +5,7 @@
 
 - name: Create app container
   docker_container:
-    image: "lando-built-ansible:{{ bespin_settings.lando.version }}"
+    image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
     name: bespin-lando
     volumes:
       - /etc/lando_config.yml:/etc/lando_config.yml

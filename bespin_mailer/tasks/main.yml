@@ -10,7 +10,7 @@
 
 - name: Create app container
   docker_container:
-    image: "mailer-built-ansible:master"
+    image: "{{ bespin_settings.mailer.build.image_name }}:{{ bespin_settings.mailer.build.version }}"
     name: bespin-mailer
     env: "{{ web_environment }}"
     pull: false

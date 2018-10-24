@@ -26,7 +26,7 @@
 
 - name: Create app container
   docker_container:
-    image: "dukegcb/bespin-api:{{ bespin_settings.web.version }}-apache"
+    image: "{{ bespin_settings.web.build.secondary_image_name}}:{{ bespin_settings.web.build.version }}-apache"
     name: bespin-web
     env: "{{ web_environment }}"
     volumes:
