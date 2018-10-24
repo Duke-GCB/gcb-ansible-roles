@@ -19,10 +19,15 @@
     name: "{{ image_name }}"
     tag: "{{ version }}"
 
-- name: Build secondary image (if configured)
+# This step is for the special case of bespin-api. As of 2018-10-24 it has two Dockerfiles
+# in the repo. One to build the django-serving image (not for production) and the second
+# to install Apache with mod_wsgi. The second image depends on the first, and should be
+# built as a second tag in the first image repo.
+- name: Build secondary image version (if configured)
   docker_image:
     path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}/{{ secondary_context }}"
-    name: "{{ secondary_image_name }}"
+    name: "{{ image_name }}"
     tag: "{{ secondary_version }}"
     buildargs: "{{ secondary_buildargs }}"
+    pull: no # Do not pull, because the base image is likely a locally-built image that would not exist on Docker Hub.
   when: secondary_context is defined and secondary_version is defined and secondary_buildargs is defined
