@@ -1,22 +1,28 @@
 - name: Ensure directory exists for cloning git repo
   file:
     state: directory
-    path: "{{ local_repo_path }}/{{ image_name }}-{{ version }}"
+    path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
 
-# Note that this checks out the git repo to the provided local repo
-# path and image name. it does not infer a subdirectory name from the
-# remote git repo like the default git mode.
-# We must use a somewhat unique name here so that one host can
-# support different image builds
+# Note that this checks out the git repo to a specific local directory based on the
+# provided image_name and version. it does not infer a subdirectory name from the
+# remote git repo like the default git mode. We must use a unique name here so that
+# one host can support distinct image builds
 - name: Clone the Git repo at the provided version
   git:
-    repo: "{{ repo_path }}"
-    dest: "{{ local_repo_path }}/{{ image_name }}-{{ version }}"
+    repo: "{{ repo_url }}"
+    dest: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
     version: "{{ version }}"
 
-# TODO: Only build the docker image if the git version changed.
 - name: Build a docker image
   docker_image:
-    path: "{{ local_repo_path }}/{{ image_name }}-{{ version }}"
+    path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
     name: "{{ image_name }}"
     tag: "{{ version }}"
+
+- name: Build secondary image (if configured)
+  docker_image:
+    path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}/{{ secondary_context }}"
+    name: "{{ secondary_image_name }}"
+    tag: "{{ secondary_version }}"
+    buildargs: "{{ secondary_buildargs }}"
+  when: secondary_context is defined and secondary_version is defined and secondary_buildargs is defined
