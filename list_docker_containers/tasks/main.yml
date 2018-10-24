@@ -1,7 +1,18 @@
+- name: Check if docker is installed
+  command: which docker
+  register: which_docker
+  failed_when: no
+  changed_when: no
+
 - name: List running docker containers
   command: "{% raw %}docker ps --format '{{.Names}}, {{.Image}}'{% endraw %}"
   register: docker_ps
+  when: which_docker.rc == 0
+
 - set_fact:
     containers: "{{ docker_ps.stdout_lines}}"
+  when: which_docker.rc == 0
+
 - debug:
     var: containers
+  when: which_docker.rc == 0
