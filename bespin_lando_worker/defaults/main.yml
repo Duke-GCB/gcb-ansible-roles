@@ -1,7 +1,7 @@
-lando_worker:
+bespin_lando_worker:
   lando_version: 0.9.3
   cwltool_version: 1.0.20180912090223
   work_directory: /work
   path_to_lando_worker: /usr/local/bin/lando_worker
   mount_name: /data
-  mount_src: /mnt/bespin_datasets
+  mount_src: bespin-nfs:/mnt/bespin_datasets
