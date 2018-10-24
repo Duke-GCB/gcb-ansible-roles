@@ -26,7 +26,7 @@
 
 - name: Create app container
   docker_container:
-    image: "{{ bespin_settings.web.build.secondary_image_name}}:{{ bespin_settings.web.build.version }}-apache"
+    image: "{{ bespin_settings.web.build.image_name}}:{{ bespin_settings.web.build.version }}-apache"
     name: bespin-web
     env: "{{ web_environment }}"
     volumes:
@@ -35,7 +35,6 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: true
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always

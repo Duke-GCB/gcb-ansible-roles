@@ -13,7 +13,6 @@
     image: "{{ bespin_settings.mailer.build.image_name }}:{{ bespin_settings.mailer.build.version }}"
     name: bespin-mailer
     env: "{{ web_environment }}"
-    pull: false
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always

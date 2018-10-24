@@ -9,7 +9,6 @@
     name: bespin-lando
     volumes:
       - /etc/lando_config.yml:/etc/lando_config.yml
-    pull: false
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
