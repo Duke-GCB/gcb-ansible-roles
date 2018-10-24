@@ -1,0 +1,7 @@
+- name: List running docker containers
+  command: "{% raw %}docker ps --format '{{.Names}}, {{.Image}}'{% endraw %}"
+  register: docker_ps
+- set_fact:
+    containers: "{{ docker_ps.stdout_lines}}"
+- debug:
+    var: containers
