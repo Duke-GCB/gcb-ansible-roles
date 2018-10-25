@@ -15,6 +15,11 @@
     editable: false
     executable: pip3
 
+- name: Check where lando_worker has been installed to
+  command: which lando_worker
+  register: which_lando_worker
+  changed_when: no
+
 - pip:
     name: html5lib
     executable: pip3
@@ -40,7 +45,7 @@
       After=multi-user.target
       [Service]
       Type=idle
-      ExecStart={{ path_to_lando_worker }}
+      ExecStart={{ which_lando_worker.stdout }}
       WorkingDirectory={{ lando_work_directory }}
       User=root
       [Install]
