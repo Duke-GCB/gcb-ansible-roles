@@ -1,0 +1,66 @@
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install apt dependencies
+  apt:
+   name: "{{ packages }}"
+  vars:
+    packages:
+    - nfs-common
+    - libssl-dev
+
+- pip:
+    name: "git+git://github.com/Duke-GCB/lando.git@{{ lando_version }}"
+    editable: false
+    executable: pip3
+
+- name: Check where lando_worker has been installed to
+  command: which lando_worker
+  register: which_lando_worker
+  changed_when: no
+
+- pip:
+    name: html5lib
+    executable: pip3
+
+- pip:
+    name: "{{ cwl_runner }}"
+    version: "{{ cwl_runner_version }}"
+    executable: pip3
+
+- file:
+    dest: "{{ lando_work_directory }}"
+    state: directory
+    owner: ubuntu
+    mode: 0744
+
+- name: Setup lando_worker service
+  blockinfile:
+    dest: /etc/systemd/system/lando_worker.service
+    create: yes
+    block: |
+      [Unit]
+      Description=Lando Service
+      After=multi-user.target
+      [Service]
+      Type=idle
+      ExecStart={{ which_lando_worker.stdout }}
+      WorkingDirectory={{ lando_work_directory }}
+      User=root
+      [Install]
+      WantedBy=multi-user.target
+
+- service:
+    name: lando_worker
+    state: started
+    enabled: yes
+
+- name: set mountpoints
+  mount:
+    name: "{{ worker_mount_name }}"
+    src: "{{ worker_mount_src }}"
+    fstype: nfs
+    opts: ro,sync,hard,intr
+    state: mounted
+
