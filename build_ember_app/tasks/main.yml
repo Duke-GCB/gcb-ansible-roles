@@ -36,7 +36,6 @@
       - "{{ target_volume }}:/src/dist"
     working_dir: "/src"
 
-# After the build, package.lock will have been updated
 - name: Remove loaddata container
   docker_container:
     name: "ember-builder-{{ repo_name }}-{{ version }}"
