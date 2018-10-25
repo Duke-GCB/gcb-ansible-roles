@@ -8,7 +8,7 @@ Uses the [docker_container](https://docs.ansible.com/ansible/2.6/modules/docker_
 
 ## Usage
 
-This role uses a nodejs Docker image to build the application from source into a named docker volume..
+This role uses a nodejs Docker image to build the application from source into a named docker volume.
 build\_ember\_app is designed to run before [bespin_web](../bespin_web), where a Docker container running a web server serves a pre-built Ember application from a named docker volume.
 
 It requires the following variables to build the docker image:
