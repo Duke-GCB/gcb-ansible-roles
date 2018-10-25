@@ -1,5 +1,6 @@
 lando_version: master
-cwltool_version: latest
+cwl_runner: cwltool
+cwl_runner_version: latest
 lando_work_directory: /work
 path_to_lando_worker: /usr/local/bin/lando_worker
 worker_mount_name: /data

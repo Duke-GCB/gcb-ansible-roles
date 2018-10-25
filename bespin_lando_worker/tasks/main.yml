@@ -20,8 +20,8 @@
     executable: pip3
 
 - pip:
-    name: cwltool
-    version: "{{ cwltool_version }}"
+    name: "{{ cwl_runner }}"
+    version: "{{ cwl_runner_version }}"
     executable: pip3
 
 - file:
