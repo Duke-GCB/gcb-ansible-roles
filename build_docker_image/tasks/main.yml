@@ -1,0 +1,33 @@
+- name: Ensure directory exists for cloning git repo
+  file:
+    state: directory
+    path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
+
+# Note that this checks out the git repo to a specific local directory based on the
+# provided image_name and version. it does not infer a subdirectory name from the
+# remote git repo like the default git mode. We must use a unique name here so that
+# one host can support distinct image builds
+- name: Clone the Git repo at the provided version
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
+    version: "{{ version }}"
+
+- name: Build a docker image
+  docker_image:
+    path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
+    name: "{{ image_name }}"
+    tag: "{{ version }}"
+
+# This step is for the special case of bespin-api. As of 2018-10-24 it has two Dockerfiles
+# in the repo. One to build the django-serving image (not for production) and the second
+# to install Apache with mod_wsgi. The second image depends on the first, and should be
+# built as a second tag in the first image repo.
+- name: Build secondary image version (if configured)
+  docker_image:
+    path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}/{{ secondary_context }}"
+    name: "{{ image_name }}"
+    tag: "{{ secondary_version }}"
+    buildargs: "{{ secondary_buildargs }}"
+    pull: no # Do not pull, because the base image is likely a locally-built image that would not exist on Docker Hub.
+  when: secondary_context is defined and secondary_version is defined and secondary_buildargs is defined

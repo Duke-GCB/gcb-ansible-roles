@@ -19,7 +19,7 @@
 
 - name: Create bespin-job-watcher container
   docker_container:
-    image: dukegcb/bespin-job-watcher
+    image: "{{ bespin_settings.job_watcher.build.image_name }}:{{ bespin_settings.job_watcher.build.version }}"
     name: bespin-job-watcher
     volumes:
       - /etc/external/:/etc/external/
@@ -28,7 +28,6 @@
       - "80:80"
       - "443:443"
       - "8080:8080"
-    pull: true
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
