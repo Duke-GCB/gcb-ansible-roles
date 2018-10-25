@@ -7,11 +7,16 @@
 # provided image_name and version. it does not infer a subdirectory name from the
 # remote git repo like the default git mode. We must use a unique name here so that
 # one host can support distinct ember builds
+#
+# We use force because npm install will update package-lock.json and leave it modified
+# in the working directory. Subsequent git actions would fail because of those local changes
+# without force
 - name: Clone the Git repo at the provided version
   git:
     repo: "{{ repo_url }}"
     dest: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}"
     version: "{{ version }}"
+    force: yes
 
 - name: Run the ember build inside Docker
   docker_container:
@@ -25,18 +30,21 @@
       - "{{ local_repo_root }}/{{ repo_name }}-{{ version }}:/src"
     working_dir: "/src"
 
+# After the build, package.lock will have been updated
 - name: Remove loaddata container
   docker_container:
     name: "ember-builder-{{ repo_name }}-{{ version }}"
     state: absent
 
-- name: Copy the default output directory (dist) to desired location
-  copy:
-    remote_src: true
-    src: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}/dist"
-    dest: "{{ target_directory }}"
-
-- name: Remove built artifact
+- name: Ensure target directory is present
   file:
-    path: "{{ local_repo_root }}/{{ repo_name }}-{{ version }}/dist"
-    state: absent
+    state: directory
+    path: "{{ target_directory }}"
+
+# Clearing out the directory manually because removing and recreating the directory left apache in a bad state (404 errors).
+# Using -r to remove recursively, and -f to ignore empty directories.
+- name: Clear target directory
+  shell: "/bin/rm -rf {{ target_directory }}/*"
+
+- name: Move contents of built dist directory to target directory
+  shell: "mv {{ local_repo_root }}/{{ repo_name }}-{{ version }}/dist/* {{ target_directory }}"

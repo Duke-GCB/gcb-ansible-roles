@@ -9,20 +9,15 @@
   copy: src="../../../files/{{ bespin_settings.web.ssl_key_file }}" dest="{{ bespin_settings.web.ssl_dir }}/privkey.pem"
         mode=400
 
-- name: Make ui directory
+# The bespin-api Docker image includes apache and is configured to serve the production-built
+# bespin-ui ember app from /srv/ui. The app is built using the build_ember_app role and should be placed
+# in bespin_settings.ui.srv_dir
+# That directory is mounted as a volume, so we can't simply delete / replace the directory otherwise
+# docker and apache can't find it.
+- name: Ensure directory exists for bespin-ui
   file:
     state: directory
     path: "{{ bespin_settings.ui.srv_dir }}"
-
-# Clearing out the directory manually because removing and recreating the directory left apache in a bad state (404 errors).
-- name: Clear out existing ui data
-  shell: /bin/rm -rf /srv/ui/*
-
-- name: Download bespin-ui release tar.gz
-  unarchive:
-    src: "{{ bespin_settings.ui.dist_base_url }}/{{ bespin_settings.ui.dist_version }}/{{ bespin_settings.ui.dist_filename }}"
-    dest: "{{ bespin_settings.ui.srv_dir }}"
-    remote_src: yes
 
 - name: Create app container
   docker_container:
