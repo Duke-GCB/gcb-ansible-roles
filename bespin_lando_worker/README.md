@@ -4,7 +4,7 @@ Ansible role for deploying [lando](https://github.com/Duke-GCB/lando) in worker 
 
 This role installs the following:
 - **lando** - Code that will read messages related to staging data, running a specific workflow, and storing output
-- **cwltool** - Program to use for running the workflow
+- **cwltool** - Program to use for running the workflow, cwltool can be overridden if the tool is installable via pip3.
 
 This role sets up lando as a service and creates a nfs mount.
 Lando is installed directly from github repository.
@@ -22,6 +22,6 @@ Users can select a specific version in a playbook like so:
   roles:
     - role: bespin_lando_worker
       lando_version: 0.9.3
-      cwltool_version: 1.0.20180912090223
+      cwl_runner_version: 1.0.20180912090223
 ...
 ```
