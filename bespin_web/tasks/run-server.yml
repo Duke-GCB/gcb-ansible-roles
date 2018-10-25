@@ -10,15 +10,7 @@
         mode=400
 
 # The bespin-api Docker image includes apache and is configured to serve the production-built
-# bespin-ui ember app from /srv/ui. The app is built using the build_ember_app role and should be placed
-# in bespin_settings.ui.srv_dir
-# That directory is mounted as a volume, so we can't simply delete / replace the directory otherwise
-# docker and apache can't find it.
-- name: Ensure directory exists for bespin-ui
-  file:
-    state: directory
-    path: "{{ bespin_settings.ui.srv_dir }}"
-
+# bespin-ui ember app from /srv/ui. That app is built by the build_ember_app, and placed in a docker volume
 - name: Create app container
   docker_container:
     image: "{{ bespin_settings.web.build.image_name}}:{{ bespin_settings.web.build.version }}-apache"
@@ -26,7 +18,7 @@
     env: "{{ web_environment }}"
     volumes:
       - /etc/external/:/etc/external/
-      - "{{ bespin_settings.ui.srv_dir }}:/srv/ui/"
+      - "bespin-ui-{{ bespin_settings.ui.build.version }}:/srv/ui/:ro"
     ports:
       - "80:80"
       - "443:443"

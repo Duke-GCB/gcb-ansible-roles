@@ -18,6 +18,11 @@
     version: "{{ version }}"
     force: yes
 
+- name: Create a docker volume to hold the built application
+  docker_volume:
+    name: "{{ target_volume }}"
+    state: present
+
 - name: Run the ember build inside Docker
   docker_container:
     command: "{{ ember_build_cmd }}"
@@ -28,6 +33,7 @@
     env: "{{ build_environment }}"
     volumes:
       - "{{ local_repo_root }}/{{ repo_name }}-{{ version }}:/src"
+      - "{{ target_volume }}:/src/dist"
     working_dir: "/src"
 
 # After the build, package.lock will have been updated
@@ -35,16 +41,3 @@
   docker_container:
     name: "ember-builder-{{ repo_name }}-{{ version }}"
     state: absent
-
-- name: Ensure target directory is present
-  file:
-    state: directory
-    path: "{{ target_directory }}"
-
-# Clearing out the directory manually because removing and recreating the directory left apache in a bad state (404 errors).
-# Using -r to remove recursively, and -f to ignore empty directories.
-- name: Clear target directory
-  shell: "/bin/rm -rf {{ target_directory }}/*"
-
-- name: Move contents of built dist directory to target directory
-  shell: "mv {{ local_repo_root }}/{{ repo_name }}-{{ version }}/dist/* {{ target_directory }}"
