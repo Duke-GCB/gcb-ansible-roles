@@ -1,0 +1,46 @@
+- name: create security group
+  os_security_group:
+    state: present
+    name: ssh
+- name: add security group rule for ssh
+  os_security_group_rule:
+    security_group: ssh
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
+    remote_ip_prefix: 0.0.0.0/0
+- name: Create private network
+  os_network:
+    state: present
+    name: rnaseq_private
+    external: false
+- name: Create a subnet
+  os_subnet:
+    state: present
+    network_name: rnaseq_private
+    name: rnaseq_subnet
+    cidr: 192.168.0.0/24
+    dns_nameservers:
+      - 10.11.10.11
+      - 10.11.11.10
+- name: Create router
+  os_router:
+    state: present
+    name: rnaseq_router
+    network: ext-net
+    interfaces:
+      - net: rnaseq_private
+        subnet: rnaseq_subnet
+- name: create openstack instance
+  os_server:
+    state: present
+    name: "{{ item }}"
+    image: "CentOS 7 64-bit"
+    network: "rnaseq_private"
+    security_groups:
+      - default
+      - ssh
+    auto_ip: yes
+    flavor: "m1.large"
+    key_name: "dcl9"
+  loop: "{{ server_names }}"
