@@ -110,8 +110,7 @@
 - name: Install development version of MultiQC
   become: yes
   pip:
-    name: git+https://github.com/ewels/MultiQC.git#egg=multiqc
-    extra_args: --upgrade --force-reinstall
+    name: multiqc
 - name: Install HTSeq
   become: yes
   pip:
@@ -128,18 +127,6 @@
 - name: Symlink trim_galore
   become: yes
   file: src=/opt/TrimGalore/trim_galore dest=/usr/local/bin/trim_galore state=link
-- name: Create NFS directory
-  become: yes
-  file: path=/nfs/data state=directory mode=0755
-- name: mount /nfs/data
-  become: yes
-  mount: fstype=nfs opts='vers=3' path=/nfs/data src={{ readonly }} state=mounted
-- name: Create GSEA directory
-  become: yes
-  file: path=/opt/GSEA state=directory mode=0755
-- name: Symlink GSEA jar file to /opt/GSEA/gsea-3.0.jar
-  become: yes
-  file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
 - name: Create QoRTs directory
   become: yes
   file: path=/opt/QoRTs state=directory mode=0755
@@ -152,3 +139,20 @@
 - name: Create /work directory
   become: yes
   file: path=/work state=directory mode=0777 recurse=yes
+
+# NFS Mounting
+- name: Create NFS directory
+  become: yes
+  file: path=/nfs/data state=directory mode=0755
+
+- name: mount /nfs/data
+  become: yes
+  mount: fstype=nfs opts='vers=3' path=/nfs/data src={{ readonly }} state=mounted
+
+- name: Create GSEA directory
+  become: yes
+  file: path=/opt/GSEA state=directory mode=0755
+
+- name: Symlink GSEA jar file to /opt/GSEA/gsea-3.0.jar
+  become: yes
+  file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
