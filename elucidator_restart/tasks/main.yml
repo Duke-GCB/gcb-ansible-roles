@@ -61,6 +61,5 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: true
     state: started
     restart_policy: always
