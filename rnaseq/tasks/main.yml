@@ -1,32 +1,33 @@
 ---
 - name: Install software from yum
   become: yes
-  yum: name={{ item }} state=present
-  with_items:
-    - man
-    - git
-    - zip
-    - unzip
-    - tcsh
-    - evince
-    - firefox-38.7.0-1.el7_2
-    - xorg-x11-xauth
-    - xorg-x11-apps
-    - xorg-x11-xinit
-    - gedit
-    - gedit-plugins
-    - inkscape
-    - ImageMagick
-    - mesa-libGL
-    - mesa-libGLU
-    - java-1.8.0-openjdk
-    - python-pip
-    - python-devel
-    - nfs-utils
-    - libxml2-devel
-    - curl-devel
-    - R
-    - samtools
+  yum:
+    state: present
+    name:
+      - man
+      - git
+      - zip
+      - unzip
+      - tcsh
+      - evince
+      - firefox-38.7.0-1.el7_2
+      - xorg-x11-xauth
+      - xorg-x11-apps
+      - xorg-x11-xinit
+      - gedit
+      - gedit-plugins
+      - inkscape
+      - ImageMagick
+      - mesa-libGL
+      - mesa-libGLU
+      - java-1.8.0-openjdk
+      - python-pip
+      - python-devel
+      - nfs-utils
+      - libxml2-devel
+      - curl-devel
+      - R
+      - samtools
 # for ansible >=2.4, use allow_downgrade and specify versions for R and samtools
 - name: Exclude firefox from yum updates
   become: yes
