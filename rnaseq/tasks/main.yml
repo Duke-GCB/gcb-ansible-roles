@@ -101,10 +101,11 @@
   pip:
     name: cutadapt
     version: 1.14
-- name: Install development version of MultiQC
+- name: Install MultiQC
   become: yes
   pip:
     name: multiqc
+    extra_args: "--ignore-installed"
 - name: Install HTSeq
   become: yes
   pip:
