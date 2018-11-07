@@ -104,8 +104,7 @@
 - name: Install development version of MultiQC
   become: yes
   pip:
-    name: git+https://github.com/ewels/MultiQC.git#egg=multiqc
-    extra_args: --upgrade --force-reinstall
+    name: multiqc
 - name: Install HTSeq
   become: yes
   pip:
