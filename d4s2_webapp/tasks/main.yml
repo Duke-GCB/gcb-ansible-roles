@@ -7,13 +7,6 @@
         mode=0400
         setype="svirt_sandbox_file_t"
   tags: ['api','ui']
-- name: Login to docker registry
-  docker_login:
-    registry: "{{ docker_registry }}"
-    username: "{{ docker_username }}"
-    password: "{{ docker_password }}"
-  when: docker_registry is defined
-  tags: ['api','ui']
 - name: Create Database container
   docker_container:
     image: postgres:9.5
@@ -23,7 +16,7 @@
     env: "{{ d4s2_docker_env }}"
     volumes:
       - /var/lib/postgresql/data:/var/lib/postgresql/data
-    pull: true
+    pull: false
     state: started
     restart_policy: always
   tags: ['api']
@@ -34,7 +27,7 @@
     networks:
       - name: "{{ d4s2_docker_network }}"
     env: "{{ d4s2_docker_env }}"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
   tags: ['api']
@@ -45,7 +38,7 @@
     networks:
       - name: "{{ d4s2_docker_network }}"
     env: "{{ d4s2_docker_env }}"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
     command: python manage.py process_tasks
@@ -72,7 +65,7 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
   tags: ['api','ui']
