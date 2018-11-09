@@ -1,0 +1,13 @@
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+# The ansible yum module has an update_cache option, but it
+# currently only works when specifying a package name.
+# https://github.com/ansible/ansible/issues/33461 suggests
+# - command: yum makecache
+# Fixed in https://github.com/ansible/ansible/pull/46183
+- name: Update yum cache
+  command: yum makecache
+  when: ansible_os_family == 'RedHat'
