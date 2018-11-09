@@ -8,6 +8,7 @@
 # https://github.com/ansible/ansible/issues/33461 suggests
 # - command: yum makecache
 # Fixed in https://github.com/ansible/ansible/pull/46183
+# We set warn=false so that ansible doesn't tell us to use the yum module
 - name: Update yum cache
-  command: yum makecache
+  command: yum makecache warn=false
   when: ansible_os_family == 'RedHat'
