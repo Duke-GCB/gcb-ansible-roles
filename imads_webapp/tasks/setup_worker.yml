@@ -6,14 +6,14 @@
 - name: Create predictions worker container
   docker_container:
     name: worker
-    image: dukegcb/imads-worker
+    image: "{{ imads_worker.build.image_name }}:{{ imads_worker.build.version }}"
     networks:
       - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
     volumes:
       - "{{ imads.data_root }}/pred_data/models/:/models/:ro"
       - "{{ imads.data_root }}/pred_data/work/:/work/:rw"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
 

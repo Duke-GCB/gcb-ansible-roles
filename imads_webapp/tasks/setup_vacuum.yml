@@ -2,7 +2,7 @@
 
 - name: Create database vacuum container
   docker_container:
-    image: dukegcb/imads
+    image: "{{ imads_web.build.image_name }}:{{ imads_web.build.version }}"
     name: vacuum
     networks:
       - name: "{{ imads.network }}"
@@ -11,6 +11,6 @@
     volumes:
       - "{{ imads.data_root }}/etc/external/:/etc/external/"
       - "{{ imads.data_root }}/pred_data:/tmp/pred_data"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
