@@ -8,7 +8,7 @@
 - name: Create Database container in loading state
   when: pred_data_loaded.stat.isreg is not defined
   docker_container:
-    image: "{{ db_image }}"
+    image: "{{ imads.db_image }}"
     name: db
     command: "postgres -c maintenance_work_mem=2048MB -c fsync=off"
     networks:
@@ -25,7 +25,7 @@
   when: pred_data_loaded.stat.isreg is not defined
   docker_container:
     name: load
-    image: "{{ imads_web.build.image_name }}:{{ imads_web.build.version }}"
+    image: "{{ imads.web.build.image_name }}:{{ imads.web.build.version }}"
     networks:
       - name: "{{ imads.network }}"
     env: "{{ imads.env }}"
@@ -48,7 +48,7 @@
 # Setup production database settings
 - name: Create Database container in production state (1/4 RAM shared_buffers, memory for sorting)
   docker_container:
-    image: "{{ db_image }}"
+    image: "{{ imads.db_image }}"
     name: db
     command: "postgres -c shared_buffers=4GB -c work_mem=48MB -c logging_collector=on -c log_directory='pg_log' -c log_min_duration_statement=1500"
     networks:

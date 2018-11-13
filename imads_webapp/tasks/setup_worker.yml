@@ -6,7 +6,7 @@
 - name: Create predictions worker container
   docker_container:
     name: worker
-    image: "{{ imads_worker.build.image_name }}:{{ imads_worker.build.version }}"
+    image: "{{ imads.worker.build.image_name }}:{{ imads.worker.build.version }}"
     networks:
       - name: "{{ imads.network }}"
     env: "{{ imads.env }}"

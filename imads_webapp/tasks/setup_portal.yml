@@ -2,7 +2,7 @@
 
 - name: Create web portal container
   docker_container:
-    image: "{{ imads_web.build.image_name }}:{{ imads_web.build.version }}"
+    image: "{{ imads.web.build.image_name }}:{{ imads.web.build.version }}"
     name: web
     networks:
       - name: "{{ imads.network }}"
