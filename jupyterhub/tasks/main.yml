@@ -268,6 +268,8 @@
     marker: "# {mark} ANSIBLE MANAGED SLURM CONFIG"
     block: |
       c.Spawner.args = ['--NotebookApp.iopub_data_rate_limit=1000000000']
+      c.Spawner.http_timeout = 90 # Up from default of 30
+      c.Spawner.start_timeout = 180 # up from default of 60
       c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
       c.BatchSpawnerBase.req_runtime = '{{ req_runtime }}'
       c.BatchSpawnerBase.req_memory = '{{ req_memory }}'
