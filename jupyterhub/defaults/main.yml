@@ -4,7 +4,7 @@ authenticator: "pam"
 docker_image: "jupyterhub/singleuser"
 slurm_partition: "all"
 slurm_account: ""
-req_runtime: 120
+req_runtime: 240
 req_memory: 4096
 jupyterhub_version: "0.8.0"
 jupyter_version: "1.0.0"
