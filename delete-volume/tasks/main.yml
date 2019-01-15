@@ -1,0 +1,11 @@
+---
+- name: Detach the volume from server.
+  os_server_volume:
+    state: absent
+    server: "{{ server_name }}"
+    volume: "{{ volume_name }}"
+- name: Delete volume
+  os_volume:
+    state: absent
+    display_name: "{{ volume_name }}"
+    availability_zone: "{{ availability_zone }}"
