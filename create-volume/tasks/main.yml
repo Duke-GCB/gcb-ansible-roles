@@ -1,0 +1,21 @@
+---
+- name: Create volume
+  os_volume:
+    state: present
+    display_name: "{{ volume_name }}"
+    size: "{{ size_gb }}"
+    availability_zone: "{{ availability_zone }}"
+    display_description: "{{ volume_description }}"
+- name: Atach the volume to server.
+  os_server_volume:
+    state: present
+    server: "{{ server_name }}"
+    volume: "{{ volume_name }}"
+  register: attached_volume
+- name: Record volume device id
+  set_fact:
+    device_id: "{{ attached_volume.attachments[0].device }}"
+- name: Debug attached_volume
+  debug:
+    var: device_id
+
