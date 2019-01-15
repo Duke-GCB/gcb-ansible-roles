@@ -22,8 +22,6 @@
   changed_when: False
 - name: Mount device by UUID.
   mount:
-    # disabling backup for now since it requires ansible 2.5 and I only have 2.4
-#    backup: yes
     path: "{{ mount_point }}"
     src: UUID={{ disk_blkid.stdout }}
     fstype: ext4
