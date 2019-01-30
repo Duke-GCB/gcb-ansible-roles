@@ -9,6 +9,7 @@
     packages:
     - nfs-common
     - libssl-dev
+    - nodejs
 
 - pip:
     name: "git+git://github.com/Duke-GCB/lando.git@{{ lando_version }}"
