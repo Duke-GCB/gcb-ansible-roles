@@ -1,0 +1,26 @@
+- name: Setup lando config
+  template:
+    src: lando_k8s_config.yml.j2
+    dest: /etc/lando_k8s_config.yml
+
+- name: Create lando kubernetes job runner container
+  docker_container:
+    image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
+    name: bespin-lando-k8s
+    volumes:
+      - /etc/lando_k8s_config.yml:/etc/lando_k8s_config.yml
+    etc_hosts: "{{ bespin_hosts_list }}"
+    state: started
+    restart_policy: always
+    command: python -m lando.k8s.lando /etc/lando_k8s_config.yml
+
+- name: Create lando kubernetes watcher container
+  docker_container:
+    image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
+    name: bespin-watcher-k8s
+    volumes:
+      - /etc/lando_k8s_config.yml:/etc/lando_k8s_config.yml
+    etc_hosts: "{{ bespin_hosts_list }}"
+    state: started
+    restart_policy: always
+    command: python -m lando.k8s.watcher /etc/lando_k8s_config.yml
