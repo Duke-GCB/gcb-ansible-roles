@@ -5,12 +5,15 @@ work_queue:
   listen_queue: "{{ bespin_settings.rabbit.listen_queue_k8s }}"
   worker_username: "{{ bespin_settings.rabbit.worker_username }}"
   worker_password: "{{ bespin_settings.rabbit.worker_password }}"
-bespin_api:
-  url: "{{ bespin_settings.web.url }}"
-  token: "{{ bespin_settings.web.lando_token }}"
+
 cluster_api_settings:
   host: "{{ bespin_settings.k8s.host }}"
   token: "{{ bespin_settings.k8s.token }}"
   namespace: "{{ bespin_settings.k8s.namespace }}"
-  verify_ssl: "{{ bespin_settings.k8s.verify_ssl }}"
+  verify_ssl: {{ bespin_settings.k8s.verify_ssl }}
+
+bespin_api:
+  token: "{{ bespin_settings.web.lando_token }}"
+  url: "{{ bespin_settings.web.url }}"
+
 {{ bespin_settings.lando_k8s | to_yaml }}
