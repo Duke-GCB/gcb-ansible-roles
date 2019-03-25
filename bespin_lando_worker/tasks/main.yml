@@ -11,7 +11,8 @@
     - libssl-dev
     - nodejs
 
-- pip:
+- name: Install lando via pip
+  pip:
     name: lando
     version: "{{ lando_version }}"
     executable: pip3
@@ -21,16 +22,19 @@
   register: which_lando_worker
   changed_when: no
 
-- pip:
+- name: Install html5lib via pip
+  pip:
     name: html5lib
     executable: pip3
 
-- pip:
+- name: Install CWL runner
+  pip:
     name: "{{ cwl_runner }}"
     version: "{{ cwl_runner_version }}"
     executable: pip3
 
-- file:
+- name: Make lando work directory
+  file:
     dest: "{{ lando_work_directory }}"
     state: directory
     owner: ubuntu
@@ -52,7 +56,8 @@
       [Install]
       WantedBy=multi-user.target
 
-- service:
+- name: Start lando_worker service
+  service:
     name: lando_worker
     state: started
     enabled: yes
