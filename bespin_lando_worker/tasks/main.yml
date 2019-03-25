@@ -12,8 +12,8 @@
     - nodejs
 
 - pip:
-    name: "git+git://github.com/Duke-GCB/lando.git@{{ lando_version }}"
-    editable: false
+    name: lando
+    version: "{{ lando_version }}"
     executable: pip3
 
 - name: Check where lando_worker has been installed to
