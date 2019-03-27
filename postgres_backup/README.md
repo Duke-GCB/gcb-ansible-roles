@@ -10,10 +10,6 @@ Docker must be running on the host where this role is deployed.
 
 It requires the following variables to setup the backup cron job:
 
-- `repo_url`: URL of git repo containing a Dockerfile in the root.
-- `version`: tag, branch, or commit to check out from Git repo. Will also be used for the docker image tag
-- `image_name`: Name of the docker image to build.
-
 - `database_image`: name of the postgres image to use for performing the backup eg. "postgres:9.5"
 - `database_host`: host the database is running on
 - `database_name`: name of the database to backup
