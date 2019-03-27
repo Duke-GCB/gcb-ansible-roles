@@ -20,8 +20,8 @@ It requires the following variables to setup the backup cron job:
 
 Optional variables customizing backup operation:
 
-- `database_port`: Port postgres is listening on defaults to standard postgres port 5432
-- `backup_filename_prefix`: Prefix to put in front of the backup filenames. 
+- `database_port`: Port postgres is listening on. Defaults to standard postgres port 5432
+- `backup_filename_prefix`: Prefix to put in front of the backup filenames.
 
 
 ## Examples:
@@ -34,7 +34,7 @@ Optional variables customizing backup operation:
         database_name: "bespin"
         database_username: "lando"
         database_password: "secret"
-        nfs_mount_device: "{{ bespin_settings.database.backup_nfs_mount_device }}"
+        nfs_mount_device: "someserver:/somepath/pgbup/bespin-dev-backups"
         nfs_mount_dir: "/mnt/pgbup"
         backup_filename_prefix: "bespin-dev"
 ```
