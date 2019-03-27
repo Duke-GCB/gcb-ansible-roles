@@ -24,7 +24,7 @@ Optional variables customizing backup operation:
 - `backup_filename_prefix`: Prefix to put in front of the backup filenames.
 
 
-## Examples:
+## Example:
 
 ```
     - role: postgres_backup
