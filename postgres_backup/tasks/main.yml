@@ -1,0 +1,20 @@
+- name: Install nfs module dependencies
+  apt:
+   name: nfs-common
+
+- name: Mount nfs to store database backups
+  mount:
+    path: "{{nfs_mount_dir}}"
+    state: mounted
+    src: "{{nfs_mount_device}}"
+    fstype: nfs
+
+- name: Create script to backup database into the backup dir
+  template: src=backup-postgres.sh.j2 dest=/usr/local/bin/backup-postgres.sh mode=700
+
+- name: Setup cron to backup the database once a day
+  cron:
+    name: "Backup postgres database"
+    minute: 0
+    hour: 23
+    job: "/usr/local/bin/backup-postgres.sh > /var/log/backup-postgres.log 2>&1"
