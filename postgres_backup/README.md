@@ -5,6 +5,7 @@ Creates a cron job that runs a docker container to backup a postgres database on
 ## Requirements
 
 Docker must be running on the host where this role is deployed.
+Must be run a playbook including the role (must be `sudo` or `become` since role installs packages and adds a backup user).
 
 ## Usage
 
@@ -22,7 +23,8 @@ Optional variables customizing backup operation:
 
 - `database_port`: Port postgres is listening on. Defaults to standard postgres port 5432
 - `backup_filename_prefix`: Prefix to put in front of the backup filenames.
-
+- `backup_user_home`: User home directory
+- `docker_network_name`: Name of docker network to use when backing up 
 
 ## Example:
 
