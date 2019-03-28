@@ -5,7 +5,7 @@ Creates a cron job that runs a docker container to backup a postgres database on
 ## Requirements
 
 Docker must be running on the host where this role is deployed.
-Must be run a playbook including the role (must be `sudo` or `become` since role installs packages and adds a backup user).
+Must be run in a playbook including the role (must be `sudo` or `become` since role installs packages and adds a backup user).
 
 ## Usage
 
