@@ -1,0 +1,59 @@
+- name: Install nfs module dependencies for Debian
+  apt:
+    name: nfs-common
+    state: present
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+- name: Install nfs module dependencies for RedHat
+  yum:
+    name: nfs-utils
+    state: present
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure group "docker" exists
+  group:
+    name: docker
+    state: present
+
+- name: Add backup user "postgresbackup" in the "docker" group
+  user:
+    name: postgresbackup
+    group: docker
+    home: "{{ backup_user_home }}"
+
+- name: Mount nfs to store database backups
+  mount:
+    path: "{{nfs_mount_dir}}"
+    state: mounted
+    src: "{{nfs_mount_device}}"
+    fstype: nfs
+
+- name: Give postgresbackup ownership of the backup directory
+  file:
+    path: "{{nfs_mount_dir}}"
+    owner: postgresbackup
+    mode: '700'
+
+- set_fact:
+     docker_network_flag: ""
+
+- set_fact:
+     docker_network_flag: "--network {{ docker_network_name }}"
+  when: docker_network_name is defined
+
+- name: Create script to backup database into the backup dir owned by "postgresbackup"
+  template:
+    src: backup-postgres.sh.j2
+    dest: "{{ backup_user_home }}/backup-postgres.sh"
+    mode: '700'
+    owner: postgresbackup
+
+- name: Setup cron to backup the database once a day
+  cron:
+    name: "Backup postgres database"
+    minute: 0
+    hour: 23
+    job: "{{ backup_user_home }}/backup-postgres.sh > {{ backup_user_home }}/backup-postgres.log 2>&1"
+    user: postgresbackup
