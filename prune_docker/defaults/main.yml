@@ -1,0 +1,3 @@
+---
+prune_images: yes
+prune_containers: yes
