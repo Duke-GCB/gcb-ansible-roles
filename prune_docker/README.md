@@ -19,9 +19,9 @@ The following variables can be set, butdefault to `yes`:
 ## Example:
 
 ```
-    - role: prune_docker
-      become: yes
+  roles:
+    - name: prune_docker
       vars:
-        prune_containers: yes
         prune_images: no
+        prune_containers: yes
 ```

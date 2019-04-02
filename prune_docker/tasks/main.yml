@@ -3,13 +3,29 @@
 # rather than `docker system prune`, since we do not want to
 # remove volumes, networks, or build cache
 
-# First remove all stopped containers to free up images
+- name: Check if docker is installed
+  command: which docker
+  register: which_docker
+  failed_when: no
+  changed_when: no
+
+# Remove all stopped containers to free up images
 # that are only used by stopped containers
+# The force flag only used to suppress the confirmation message
 - name: Prune stopped containers
-  command: "docker container prune"
-  when: prune_containers
+  command: "docker container prune -f"
+  register: container_prune_result
+  when: prune_containers and which_docker.rc == 0
+
+- debug: msg="{{ container_prune_result.stdout_lines }}"
+  when: prune_containers and which_docker.rc == 0
 
 # Now remove all images not used by a container
+# The force flag only used to suppress the confirmation message
 - name: Prune unused images
-  command: "docker image prune -a"
-  when: prune_images
+  command: "docker image prune -a -f"
+  register: image_prune_result
+  when: prune_images and which_docker.rc == 0
+
+- debug: msg="{{ image_prune_result.stdout_lines }}"
+  when: prune_images and which_docker.rc == 0
