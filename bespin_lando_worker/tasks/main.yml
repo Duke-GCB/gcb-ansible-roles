@@ -11,11 +11,19 @@
     - libssl-dev
     - nodejs
 
-- name: Install lando via pip
+- name: Install lando from PyPI
   pip:
     name: lando
     version: "{{ lando_version }}"
     executable: pip3
+  when: lando_install_source == 'PyPI'
+
+- name: Install lando from git
+  pip:
+    name: "git+git://github.com/Duke-GCB/lando.git@{{ lando_github_version }}"
+    editable: false
+    executable: pip3
+  when: lando_install_source == 'GitHub'
 
 - name: Check where lando_worker has been installed to
   command: which lando_worker
