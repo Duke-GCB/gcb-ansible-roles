@@ -30,6 +30,12 @@
   register: which_lando_worker
   changed_when: no
 
+- name: Install utility package from PyPI
+  pip:
+    name: "{{ util_package_name }}"
+    version: "{{ util_package_version }}"
+    executable: pip3
+
 - name: Install html5lib via pip
   pip:
     name: html5lib
