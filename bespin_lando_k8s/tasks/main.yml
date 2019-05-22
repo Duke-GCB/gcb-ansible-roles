@@ -1,26 +1,30 @@
+- set_fact:
+    lando_config_path: "/etc/lando_{{ k8s_cluster_name }}_config.yml"
+    lando_k8s: "{{ bespin_settings.k8s_clusters[k8s_cluster_name] }}"
+
 - name: Setup lando config
   template:
     src: lando_k8s_config.yml.j2
-    dest: /etc/lando_k8s_config.yml
+    dest: "{{ lando_config_path }}"
 
 - name: Create lando kubernetes job runner container
   docker_container:
     image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
-    name: bespin-lando-k8s
+    name: "bespin-lando-k8s-{{ k8s_cluster_name }}"
     volumes:
-      - /etc/lando_k8s_config.yml:/etc/lando_k8s_config.yml
+      - "{{ lando_config_path }}:{{ lando_config_path }}"
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
-    command: python -m lando.k8s.lando /etc/lando_k8s_config.yml
+    command: python -m lando.k8s.lando "{{ lando_config_path }}"
 
 - name: Create lando kubernetes watcher container
   docker_container:
     image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
-    name: bespin-watcher-k8s
+    name: "bespin-watcher-k8s-{{ k8s_cluster_name }}"
     volumes:
-      - /etc/lando_k8s_config.yml:/etc/lando_k8s_config.yml
+      - "{{ lando_config_path }}:{{ lando_config_path }}"
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
-    command: python -m lando.k8s.watcher /etc/lando_k8s_config.yml
+    command: python -m lando.k8s.watcher "{{ lando_config_path }}"
