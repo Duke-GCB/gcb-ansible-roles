@@ -8,7 +8,7 @@
     image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
     name: "bespin-lando-k8s-{{ k8s_cluster_name }}"
     volumes:
-      - "{{ lando_config_path }}:{{ lando_config_path }}"
+      - "{{ lando_config_path }}:{{ lando_config_path }}:ro"
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
@@ -19,7 +19,7 @@
     image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
     name: "bespin-watcher-k8s-{{ k8s_cluster_name }}"
     volumes:
-      - "{{ lando_config_path }}:{{ lando_config_path }}"
+      - "{{ lando_config_path }}:{{ lando_config_path }}:ro"
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
