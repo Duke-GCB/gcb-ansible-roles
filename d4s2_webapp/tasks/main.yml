@@ -31,6 +31,16 @@
     state: started
     restart_policy: always
   tags: ['api']
+- name: Create download service container
+  docker_container:
+    image: "{{ d4s2_docker_image }}"
+    name: d4s2-download
+    networks:
+      - name: "{{ d4s2_docker_network }}"
+    env: "{{ d4s2_docker_env | combine({'GUNICORN_CMD_ARGS':'--worker-class gevent'})}}"
+    pull: false
+    state: started
+    restart_policy: always
 - name: Create task processor container
   docker_container:
     image: "{{ d4s2_docker_image }}"
