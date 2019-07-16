@@ -6,7 +6,11 @@ A config file is written that is used by the pair of containers.
 This role supports deploying multiple pairs of containers to allow bespin to utilize multiple k8s clusters.
 
 ## Required fields
-- `bespin_settings` dictionary of settings used to deploy lando.k8s.* services. For each item in the `bespin_settings.k8s_clusters` dictionary a pair of runner/watcher containers and the associated config file will be created
+- `bespin_settings` dictionary of settings used to deploy lando.k8s.* services.
+- `k8s_clusters` dictionary a pair of runner/watcher containers and the associated config file will be created
+
+## Optional fields
+- `lando_k8s_state` string that is "present" or "absent" to setup or remove the specified bespin_lando_k8s instances. Defaults to "present".
 
 ## Dependencies
 None
