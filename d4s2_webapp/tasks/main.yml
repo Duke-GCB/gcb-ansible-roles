@@ -6,6 +6,8 @@
         dest="{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}"
         mode=0400
         setype="svirt_sandbox_file_t"
+  notify:
+  - restart web
   tags: ['api','ui']
 - name: Create Database container
   docker_container:
