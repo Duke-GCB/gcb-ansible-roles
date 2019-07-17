@@ -1,0 +1,15 @@
+
+- name: "Remove {{ k8s_cluster_name }} lando kubernetes job runner container"
+  docker_container:
+    name: "bespin-lando-k8s-{{ k8s_cluster_name }}"
+    state: absent
+
+- name: "Remove {{ k8s_cluster_name }} lando kubernetes watcher container"
+  docker_container:
+    name: "bespin-watcher-k8s-{{ k8s_cluster_name }}"
+    state: absent
+
+- name: "Remove lando config {{lando_config_path}}"
+  file:
+    path: "{{ lando_config_path }}"
+    state: absent

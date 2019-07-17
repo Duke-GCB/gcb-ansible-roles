@@ -1,7 +1,17 @@
-- name: Create lando k8s services for each item in bespin_settings.k8s_clusters
+- name: Create lando k8s services for each item in k8s_clusters
+  when: lando_k8s_state|default('present') == "present"
   include_tasks: create-services.yml
   vars:
     k8s_cluster_name: "{{ item.key }}"
     lando_config_path: "/etc/lando_{{ item.key }}_config.yml"
     lando_k8s: "{{ item.value }}"
-  with_dict:  "{{ bespin_settings.k8s_clusters }}"
+  with_dict:  "{{ k8s_clusters }}"
+
+- name: Remove lando k8s services for each item in k8s_clusters
+  when: lando_k8s_state|default('present') == "absent"
+  include_tasks: remove-services.yml
+  vars:
+    k8s_cluster_name: "{{ item.key }}"
+    lando_config_path: "/etc/lando_{{ item.key }}_config.yml"
+    lando_k8s: "{{ item.value }}"
+  with_dict:  "{{ k8s_clusters }}"

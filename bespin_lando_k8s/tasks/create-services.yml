@@ -1,9 +1,9 @@
-- name: Setup lando config
+- name: "Setup lando config {{ lando_config_path }}"
   template:
     src: lando_k8s_config.yml.j2
     dest: "{{ lando_config_path }}"
 
-- name: Create lando kubernetes job runner container
+- name: "Create {{ k8s_cluster_name }} lando kubernetes job runner container"
   docker_container:
     image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
     name: "bespin-lando-k8s-{{ k8s_cluster_name }}"
@@ -14,7 +14,7 @@
     restart_policy: always
     command: python -m lando.k8s.lando "{{ lando_config_path }}"
 
-- name: Create lando kubernetes watcher container
+- name: "Create {{ k8s_cluster_name }} lando kubernetes watcher container"
   docker_container:
     image: "{{ bespin_settings.lando.build.image_name }}:{{ bespin_settings.lando.build.version }}"
     name: "bespin-watcher-k8s-{{ k8s_cluster_name }}"
