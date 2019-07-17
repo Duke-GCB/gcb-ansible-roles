@@ -6,6 +6,8 @@
         dest="{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}"
         mode=0400
         setype="svirt_sandbox_file_t"
+  notify:
+  - restart web
   tags: ['api','ui']
 - name: Create Database container
   docker_container:
@@ -30,6 +32,8 @@
     pull: false
     state: started
     restart_policy: always
+  notify:
+  - restart web
   tags: ['api']
 - name: Create download service container
   docker_container:
@@ -41,6 +45,8 @@
     pull: false
     state: started
     restart_policy: always
+  notify:
+  - restart web
 - name: Create task processor container
   docker_container:
     image: "{{ d4s2_docker_image }}"
@@ -61,6 +67,8 @@
       - name: "{{ d4s2_docker_network }}"
     state: started
     restart_policy: always
+  notify:
+  - restart web
   tags: ['ui']
 - name: Create reverse proxy web container
   docker_container:
