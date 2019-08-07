@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stage-input-data
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: change-permissions
+        image: busybox:1.28
+        command: ['chmod', '-R', '0775', '/system-data']
+        volumeMounts:
+        - mountPath: /system-data
+          name: system-data
+      containers:
+      - name: stage-input-data
+        image: dukegcb/lando-util:0.5.3
+        workingDir: /system-data
+        env:
+        - name: DDSCLIENT_CONF
+          value: "/etc/ddsclient/config"
+        command:
+        - "python"
+        - "-m"
+        - "lando_util.stagedata"
+        - "/etc/system-data/bespin-k8s-stage-system-data.json"
+        - "exomeseq-metadata.json"
+        volumeMounts:
+        - mountPath: /system-data
+          name: system-data
+        - name: ddsclient-config
+          mountPath: "/etc/ddsclient"
+          readOnly: true
+        - name: stage-exome-seq-data
+          mountPath: /etc/system-data
+      restartPolicy: OnFailure
+      volumes:
+      - name: system-data
+        persistentVolumeClaim:
+          claimName: system-data
+      - name: ddsclient-config
+        secret:
+          secretName: ddsclient-agent
+      - name: stage-exome-seq-data
+        configMap:
+          name: stage-exome-seq-data

@@ -1,0 +1,137 @@
+# Expects environment variables specifying ks8 configuration to already be set.
+# For example K8S_AUTH_HOST,  K8S_AUTH_API_KEY, and K8S_AUTH_VERIFY_SSL
+# See https://docs.ansible.com/ansible/latest/modules/k8s_module.html
+
+- name: "Create a {{ namespace_name }} namespace"
+  k8s:
+    name: "{{ namespace_name }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: "Create lando service account in {{ namespace_name }}"
+  k8s:
+    name: lando
+    api_version: v1
+    kind: ServiceAccount
+    state: present
+    namespace: "{{ namespace_name }}"
+
+# NOTE: The response from a new service account above doesn't include secrets
+- name: "Read lando service account"
+  k8s_info:
+    api_version: v1
+    kind: ServiceAccount
+    name: lando
+    namespace: "{{ namespace_name }}"
+  register: service_account_response
+
+- set_fact:
+    service_account_secret_name: "{{ service_account_response.resources[0]['secrets'][0]['name'] }}"
+
+- name: Fetch lando service account secret details
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ service_account_secret_name }}"
+    namespace: "{{ namespace_name }}"
+  register: secret_response
+
+- set_fact:
+    service_account_token: "{{ secret_response.resources[0]['data']['token'] }}"
+
+- name: Create roles for use by lando and calrissian
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('file', item) }}"
+  with_items:
+    - pod-manager-role.yml
+    - log-reader-role.yml
+    - pvc-manager-role.yml
+    - configmaps-manager-role.yml
+    - job-manager-role.yml
+
+- name: Bind roles for default service account (calrissian)
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition:
+      apiVersion: "rbac.authorization.k8s.io/v1"
+      kind: RoleBinding
+      metadata:
+        name: "{{ item }}-default-binding"
+      subjects:
+      - kind: ServiceAccount
+        name: default
+      roleRef:
+        kind: Role
+        name: "{{ item }}"
+  with_items:
+    - pod-manager-role
+    - log-reader-role
+
+- name: Bind roles for lando service account
+  k8s:
+    state: present
+    namespace: "{{ namespace_name }}"
+    definition:
+      apiVersion: "rbac.authorization.k8s.io/v1"
+      kind: RoleBinding
+      metadata:
+        name: "{{ item }}-lando-binding"
+      subjects:
+      - kind: ServiceAccount
+        name: lando
+      roleRef:
+        kind: Role
+        name: "{{ item }}"
+  with_items:
+    - pvc-manager-role
+    - configmaps-manager-role
+    - job-manager-role
+    - pod-manager-role
+    - log-reader-role
+
+- name: Create DukeDS configuration secret
+  k8s:
+    state: present
+    namespace: "{{ namespace_name }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: ddsclient-agent
+      type: Opaque
+      data:
+        config: "{{ lookup('file', '../../files/bespin-k8s-ddsclient.json') | b64encode }}"
+
+- name: Create pvc for holding system data
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('file', 'system-data-pvc.yml') }}"
+
+- set_fact:
+    stage_system_data_items: "{{ lookup('file', '../../files/bespin-k8s-stage-system-data_small.json') }}"
+
+- debug:
+    msg: "{{ stage_system_data_items | to_json }}"
+
+- name: Create configmap for loading system data volume
+  k8s:
+    state: present
+    namespace: "{{ namespace_name }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: stage-exome-seq-data
+      data:
+        bespin-k8s-stage-system-data.json: "{{ stage_system_data_items | to_json }}"
+
+- name: Run job to stage system data volume
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('file', 'k8s-lando-stage-system-data.yml') }}"
