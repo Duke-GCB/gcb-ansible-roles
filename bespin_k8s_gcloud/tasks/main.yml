@@ -1,0 +1,11 @@
+- include: tasks/gcloud_create_k8s_cluster.yml
+
+- include_role:
+    name: bespin_k8s_cluster
+    apply:
+      environment:
+        K8S_AUTH_API_KEY: "{{ gcloud_k8s_token }}"
+        K8S_AUTH_HOST: "{{ gcloud_k8s_host }}"
+        K8S_AUTH_VERIFY_SSL: no
+
+- include: tasks/gcloud_create_file_storage.yml

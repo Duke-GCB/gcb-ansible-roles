@@ -1,0 +1,33 @@
+- name: "Connecting to google cloud project {{ gcloud_project_id }}"
+  command: "gcloud config set project {{ gcloud_project_id }}"
+
+- name: "Enabling file.googleapis.com to allow creating file storage"
+  command: gcloud services enable file.googleapis.com
+
+- set_fact:
+    filestore_name: "filestore{{ cluster_name }}"
+
+# The following is based on https://cloud.google.com/community/tutorials/gke-filestore-dynamic-provisioning
+# Create filestore containing a single fileshare that can be mounted ReadWriteMany.
+# Used to store input data, intermediate results, and output data
+- name: "Creating file storage named {{ filestore_name }} supporting ReadWriteMany PVCs"
+  command: >
+    gcloud filestore instances create
+    "{{ filestore_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+    "--description=Bespin-ReadWriteMany-filestore"
+    "--tier={{ file_store_tier }}"
+    "--network=name=default"
+    "--file-share=name=bespin_fileshare,capacity={{ file_share_capacity }}"
+
+- name: "Get file storage filestore{{ cluster_name }} IP address"
+  command: >
+    gcloud beta filestore instances describe
+    "{{ filestore_name }}"
+    "--project={{ gcloud_project_id }}"
+    "--location={{ gcloud_compute_zone }}"
+    --format=\"value(networks.ipAddresses[0])\")
+  register: filestore_address_result
+
+- debug:
+    msg: "{{ filestore_address_result['stdout'] }}"

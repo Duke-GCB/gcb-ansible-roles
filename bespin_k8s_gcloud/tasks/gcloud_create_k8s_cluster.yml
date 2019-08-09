@@ -1,0 +1,101 @@
+- name: "Connecting to google cloud project {{ gcloud_project_id }}"
+  command: gcloud config set project "{{ gcloud_project_id }}"
+
+- name: "Check if a cluster exists with the name {{ cluster_name }} "
+  command: >
+    gcloud container clusters list
+    --format="value(name)"
+    "--filter=name={{ cluster_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_cluster_result
+
+- name: "Creating k8s cluster {{ cluster_name }} in zone {{ gcloud_compute_zone }}"
+  command: >
+    gcloud container clusters create "{{ cluster_name }}"
+    --zone "{{ gcloud_compute_zone }}"
+    --machine-type "{{ gcloud_machine_type }}"
+    --enable-autoscaling
+    --num-nodes "{{ gcloud_num_nodes }}"
+    --min-nodes "{{ gcloud_min_nodes }}"
+    --max-nodes "{{ gcloud_max_nodes }}"
+  when: find_cluster_result.stdout == ""
+
+- set_fact:
+    large_pool_name: large-machine-pool
+
+- name: "Check if a node poll exists with the name {{ large_pool_name }} "
+  command: >
+    gcloud container node-pools list
+    --cluster {{ cluster_name }}
+    --format="value(name)"
+    "--filter=name={{ large_pool_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_large_machine_pool_result
+
+- name: Create the large-machine-pool node pool
+  command: >
+    gcloud container node-pools create large-machine-pool
+    --cluster {{ cluster_name }}
+    --zone {{ gcloud_compute_zone }}
+    --enable-autoscaling
+    --machine-type {{ large_pool_machine_type }}
+    --num-nodes {{ large_pool_num_nodes }}
+    --min-nodes {{ large_pool_min_nodes }}
+    --max-nodes {{ large_pool_max_nodes }}
+  when: find_large_machine_pool_result.stdout == ""
+
+- name: Configure kubectl command line access to the cluster
+  command: >
+    gcloud container clusters get-credentials
+    "{{ cluster_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+
+- name: "Check if bespin-deploy service account exists"
+  command: kubectl get serviceaccount --field-selector metadata.name=bespin-deploy -o name
+  register: bespin_deploy_exists
+
+- name: "Create bespin-deploy service account"
+  command: kubectl create serviceaccount bespin-deploy
+  when: bespin_deploy_exists.stdout == ""
+
+- name: "Check if bespin-deploy-binding clusterrolebinding exists"
+  command: kubectl get clusterrolebinding --field-selector metadata.name=bespin-deploy-binding -o name
+  register: bespin_deploy_binding_exists
+
+- name: "Create bespin-deploy-binding clusterrolebinding"
+  command: >
+    kubectl create clusterrolebinding bespin-deploy-binding
+    --serviceaccount=default:bespin-deploy
+    --clusterrole cluster-admin
+  when: bespin_deploy_binding_exists.stdout == ""
+
+- name: "Fetch details about bespin-deploy service account"
+  command: kubectl get serviceaccount bespin-deploy -o json
+  register: bespin_deploy_info
+
+- set_fact:
+    service_account_details: "{{ bespin_deploy_info['stdout'] }}"
+
+- name: Fetch details about bespin-deploy service account secret
+  command: >
+    kubectl get secret
+    "{{ service_account_details['secrets'][0]['name'] }}"
+    -o json
+  register: bespin_deploy_secret_info
+
+- set_fact:
+    service_account_secret_details: "{{ bespin_deploy_secret_info['stdout'] }}"
+
+- set_fact:
+    gcloud_k8s_token: "{{ service_account_secret_details['data']['token'] | b64decode }}"
+
+- name: Fetch details about cluster so we can determine the hostname
+  command: kubectl config view --flatten -o json
+  register: kubectl_config_info
+
+- set_fact:
+    kubectl_config_details: "{{ kubectl_config_info['stdout'] }}"
+
+- set_fact:
+    gcloud_k8s_host: "{{ kubectl_config_details['clusters'][0]['cluster']['server'] }}"
+
