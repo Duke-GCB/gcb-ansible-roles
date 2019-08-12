@@ -1,11 +1,18 @@
 - name: "Connecting to google cloud project {{ gcloud_project_id }}"
-  command: "gcloud config set project {{ gcloud_project_id }}"
+  command: >
+    gcloud config set project
+    "{{ gcloud_project_id }}"
 
 - name: "Enabling file.googleapis.com to allow creating file storage"
   command: gcloud services enable file.googleapis.com
 
-- set_fact:
-    filestore_name: "filestore{{ cluster_name }}"
+- name: "Check if file storage named {{ filestore_name }} exists"
+  command: >
+    gcloud filestore instances list
+    --format="value(name)"
+    "--filter=name=projects/{{ gcloud_project_id }}/locations/{{ gcloud_compute_zone }}/instances/{{ filestore_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_filestore_result
 
 # The following is based on https://cloud.google.com/community/tutorials/gke-filestore-dynamic-provisioning
 # Create filestore containing a single fileshare that can be mounted ReadWriteMany.
@@ -19,15 +26,37 @@
     "--tier={{ file_store_tier }}"
     "--network=name=default"
     "--file-share=name=bespin_fileshare,capacity={{ file_share_capacity }}"
+  when: find_filestore_result.stdout == ""
 
 - name: "Get file storage filestore{{ cluster_name }} IP address"
   command: >
     gcloud beta filestore instances describe
     "{{ filestore_name }}"
     "--project={{ gcloud_project_id }}"
-    "--location={{ gcloud_compute_zone }}"
-    --format=\"value(networks.ipAddresses[0])\")
+    "--zone={{ gcloud_compute_zone }}"
+    --format="value(networks.ipAddresses[0])"
   register: filestore_address_result
 
+- set_fact:
+    filestore_address: "{{ filestore_address_result['stdout'] }}"
+
 - debug:
-    msg: "{{ filestore_address_result['stdout'] }}"
+    msg: "{{ filestore_address }}"
+
+- name: Create tiller service account
+  command: "kubectl apply -f {{ role_path }}/files/helm-rbac-config.yaml"
+
+- name: Initialize Helm so we can use it to setup the nfs-client provisioner
+  command: helm init --service-account tiller --wait
+
+- name: "Create nfs-client-provision for storage with ip address {{ filestore_address }}"
+  command: >
+    helm upgrade --install
+    "nfsprovisioner{{ cluster_name }}"
+    stable/nfs-client-provisioner
+    --set
+    "storageClass.name=nfsprovisioner{{ cluster_name }}"
+    --set
+    "nfs.server={{ filestore_address }}"
+    --set
+    "nfs.path=/bespin_fileshare"
