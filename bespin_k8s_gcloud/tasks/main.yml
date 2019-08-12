@@ -8,30 +8,6 @@
         K8S_AUTH_HOST: "{{ gcloud_k8s_host }}"
         K8S_AUTH_VERIFY_SSL: no
 
-#- include_role:
-#    name: bespin-k8s-dynamic-cluster.yml
-#    vars:
-#      k8s_clusters:
-#        ${CLUSTER_NAME}:
-#          listen_queue: "{{ cluster_name }}"
-#          host: "{{ gcloud_k8s_host }}"
-#          token: "{{ service_account_token }}"
-#          namespace: "{{ namespace_name }}"
-#          verify_ssl: False
-#          config_file_data:
-#            run_workflow_settings:
-#              system_data_volume:
-#                volume_claim_name: system-data
-#                mount_path: "/data"
-#            data_store_settings:
-#              secret_name: ddsclient-agent
-#            record_output_project_settings:
-#              service_account_name: lando
-#            storage_class_name: "{{ filestore_name }"
-#            log_level: INFO
-#            tmp_volume_size_in_g: 50
-#      lando_k8s_state: "present"
-
-# Need to do add-setup-to-bespin-db.py
-
 - include: tasks/gcloud_create_file_storage.yml
+
+- include: tasks/update_bespin_api.yml

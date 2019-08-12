@@ -90,12 +90,8 @@
     gcloud_k8s_token: "{{ service_account_secret_details['data']['token'] | b64decode }}"
 
 - name: Fetch details about cluster so we can determine the hostname
-  command: kubectl config view --flatten -o json
-  register: kubectl_config_info
+  command: kubectl get endpoints kubernetes --output=jsonpath={.subsets[0].addresses[0].ip}
+  register: kubectl_endpoints_info
 
 - set_fact:
-    kubectl_config_details: "{{ kubectl_config_info['stdout'] }}"
-
-- set_fact:
-    gcloud_k8s_host: "{{ kubectl_config_details['clusters'][0]['cluster']['server'] }}"
-
+    gcloud_k8s_host: "https://{{ kubectl_endpoints_info['stdout'] }}"
