@@ -13,8 +13,10 @@
   command: >
     kubectl
     "--namespace={{ namespace_name }}"
-    get pvc system-data -o=jsonpath='{.spec.volumeName}')
+    get pvc system-data -o=jsonpath='{.spec.volumeName}'
   register: system_data_volume
+  ignore_errors: True
+  when: find_cluster_result.stdout != ""
 
 - name: "Delete system data pvc"
   command:
@@ -22,7 +24,7 @@
     "--namespace={{ namespace_name }}"
     delete pvc system-data
   register: system_data_pvc_delete_result
-  when: system_data_volume.stdout == ""
+  when: find_cluster_result.stdout != "" and system_data_volume.stdout != ""
 
 - name: "Waiting for k8s cluster to cleanup pv associated with pvc"
   pause:

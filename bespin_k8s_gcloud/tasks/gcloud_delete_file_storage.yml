@@ -3,17 +3,26 @@
     gcloud config set project
     "{{ gcloud_project_id }}"
 
+- name: "Check if a cluster exists with the name {{ cluster_name }} "
+  command: >
+    gcloud container clusters list
+    --format="value(name)"
+    "--filter=name={{ cluster_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_cluster_result
+
 - name: Check if provisioner exists
   command: >
     helm list | grep
     "{{ cluster_name }}"
   register: provisioner_exists_results
+  when: find_cluster_result.stdout != ""
 
 - name: "Removing nfs client provisioner nfsprovisioner{{ cluster_name }}"
   command: >
     helm delete --purge
     "nfsprovisioner{{ cluster_name }}"
-  when: provisioner_exists_results.stdout != ""
+  when: find_cluster_result.stdout != "" and provisioner_exists_results.stdout != ""
 
 - name: "Check if file storage named {{ filestore_name }} exists"
   command: >
