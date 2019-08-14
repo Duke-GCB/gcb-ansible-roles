@@ -43,7 +43,7 @@
     namespace: "{{ namespace_name }}"
     state: present
     definition: "{{ lookup('file', item) }}"
-  with_items: lando_and_calrissian_role_paths
+  with_items: "{{ lando_and_calrissian_role_paths }}"
 
 - name: Bind roles for default service account (calrissian)
   k8s:
@@ -60,7 +60,7 @@
       roleRef:
         kind: Role
         name: "{{ item }}"
-  with_items: calrissian_roles
+  with_items: "{{ calrissian_roles }}"
 
 - name: Bind roles for lando service account
   k8s:
@@ -77,7 +77,7 @@
       roleRef:
         kind: Role
         name: "{{ item }}"
-  with_items: lando_roles
+  with_items: "{{ lando_roles }}"
 
 - name: Create DukeDS configuration secret
   k8s:
