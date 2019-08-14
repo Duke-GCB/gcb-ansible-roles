@@ -1,0 +1,6 @@
+- name: "Delete k8s cluster {{ cluster_name }} in zone {{ gcloud_compute_zone }}"
+  command: >
+    gcloud container clusters delete -q
+    "{{ cluster_name }}"
+    --zone "{{ gcloud_compute_zone }}"
+  when: cluster_exists

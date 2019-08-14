@@ -1,0 +1,20 @@
+- name: Check if provisioner exists
+  command: >
+    helm list | grep
+    "{{ cluster_name }}"
+  register: provisioner_exists_results
+  when: cluster_exists
+
+- name: "Removing nfs client provisioner nfsprovisioner{{ cluster_name }}"
+  command: >
+    helm delete --purge
+    "nfsprovisioner{{ cluster_name }}"
+  when: cluster_exists and provisioner_exists_results.stdout != ""
+
+# delete file storage that underlies the k8s persistent volume provisioner above
+- name: "Deleting file storage {{ filestore_name }}"
+  command: >
+    gcloud filestore instances delete -q
+    "{{ filestore_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  when: filestore_exists

@@ -1,0 +1,47 @@
+# Expects appropriate environment variables specifying ks8 configuration to already be set.
+# See https://docs.ansible.com/ansible/latest/modules/k8s_module.html
+
+- name: Remove stage system data job (to allow teardown before stage system data finishes)
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: absent
+    definition: "{{ lookup('file', 'k8s-lando-stage-system-data.yml') }}"
+
+- name: List any pods created by stage system data job
+  k8s_info:
+    namespace: "{{ namespace_name }}"
+    kind: Pod
+    label_selectors:
+      - job-name = stage-input-data
+  register: stage_system_data_pods
+
+- name: Remove stage system data pods
+  k8s:
+    api_version: v1
+    kind: Pod
+    name: "{{ item.metadata.name }}"
+    namespace: "{{ namespace_name }}"
+    state: absent
+  with_items: "{{ stage_system_data_pods.resources }}"
+
+- name: Get pvc info
+  k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: system-data
+    namespace: "{{ namespace_name }}"
+  register: sytem_data_pvc
+
+- name: Delete pvc for holding system data
+  k8s:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: system-data
+    namespace: "{{ namespace_name }}"
+    state: absent
+  register: deleted_pvc
+
+- name: "Waiting for k8s cluster to cleanup pv associated with system-data pvc"
+  pause:
+    seconds: 2
+  when: deleted_pvc.changed

@@ -1,0 +1,53 @@
+- name: "Creating k8s cluster {{ cluster_name }} in zone {{ gcloud_compute_zone }}"
+  command: >
+    gcloud container clusters create "{{ cluster_name }}"
+    --zone "{{ gcloud_compute_zone }}"
+    --machine-type "{{ gcloud_machine_type }}"
+    --enable-autoscaling
+    --num-nodes "{{ gcloud_num_nodes }}"
+    --min-nodes "{{ gcloud_min_nodes }}"
+    --max-nodes "{{ gcloud_max_nodes }}"
+  when: not cluster_exists
+
+- name: Create the large-machine-pool node pool
+  command: >
+    gcloud container node-pools create large-machine-pool
+    --cluster {{ cluster_name }}
+    --zone {{ gcloud_compute_zone }}
+    --enable-autoscaling
+    --machine-type {{ large_pool_machine_type }}
+    --num-nodes {{ large_pool_num_nodes }}
+    --min-nodes {{ large_pool_min_nodes }}
+    --max-nodes {{ large_pool_max_nodes }}
+  when: not large_node_pool_exists
+
+- name: Configure kubectl command line access to the cluster
+  command: >
+    gcloud container clusters get-credentials
+    "{{ cluster_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+
+- name: "Check if bespin-deploy service account exists"
+  command: kubectl get serviceaccount --field-selector metadata.name=bespin-deploy -o name
+  register: bespin_deploy_exists
+
+- set_fact:
+    service_account_exists: "{{ bespin_deploy_exists.stdout != '' }}"
+
+- name: "Create bespin-deploy service account"
+  command: kubectl create serviceaccount bespin-deploy
+  when: not service_account_exists
+
+- name: "Check if bespin-deploy-binding clusterrolebinding exists"
+  command: kubectl get clusterrolebinding --field-selector metadata.name=bespin-deploy-binding -o name
+  register: bespin_deploy_binding_exists
+
+- set_fact:
+    service_account_binding_exists: "{{ bespin_deploy_binding_exists.stdout != '' }}"
+
+- name: "Create bespin-deploy-binding clusterrolebinding"
+  command: >
+    kubectl create clusterrolebinding bespin-deploy-binding
+    --serviceaccount=default:bespin-deploy
+    --clusterrole cluster-admin
+  when: not service_account_binding_exists

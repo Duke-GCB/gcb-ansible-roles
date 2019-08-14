@@ -1,0 +1,50 @@
+# Checks status of the cluster
+# Sets facts:
+# - cluster_exists: bool
+# - large_node_pool_exists: bool
+# - filestore_exists: bool
+
+- name: "Check if a cluster exists with the name {{ cluster_name }} "
+  command: >
+    gcloud container clusters list
+    --format="value(name)"
+    "--filter=name={{ cluster_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_cluster_result
+
+- set_fact:
+    cluster_exists: "{{ find_cluster_result.stdout == cluster_name }}"
+
+- name: "Check if a node poll exists with the name {{ large_pool_name }} "
+  command: >
+    gcloud container node-pools list
+    --cluster {{ cluster_name }}
+    --format="value(name)"
+    "--filter=name={{ large_pool_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_large_machine_pool_result
+  when: cluster_exists
+
+- set_fact:
+    large_node_pool_exists: no
+
+- set_fact:
+    large_node_pool_exists: "{{ find_large_machine_pool_result.stdout == large_pool_name }}"
+  when: cluster_exists
+
+- name: "Enabling file.googleapis.com to allow accessing file storage"
+  command: gcloud services enable file.googleapis.com
+
+- set_fact:
+    gcloud_filestore_full_name: "projects/{{ gcloud_project_id }}/locations/{{ gcloud_compute_zone }}/instances/{{ filestore_name }}"
+
+- name: "Check if file storage named {{ filestore_name }} exists"
+  command: >
+    gcloud filestore instances list
+    --format="value(name)"
+    "--filter=name={{ gcloud_filestore_full_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+  register: find_filestore_result
+
+- set_fact:
+    filestore_exists: "{{ find_filestore_result.stdout == filestore_name }}"

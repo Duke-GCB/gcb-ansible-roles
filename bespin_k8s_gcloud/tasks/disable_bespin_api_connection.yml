@@ -1,8 +1,0 @@
-- name: Disable bespin-api database with settings for the k8s cluster
-  command: >
-    python
-    "{{ role_path }}/files/remove-setup-from-bespin-db.py"
-  environment:
-    BESPIN_API_TOKEN: "{{ bespin_settings.web.lando_token }}"
-    BESPIN_API_URL: "{{ bespin_settings.web.url }}"
-    CLUSTER_NAME: "{{ cluster_name }}"
