@@ -17,7 +17,7 @@
     namespace: "{{ namespace_name }}"
 
 - name: "Read lando service account"
-  k8s_facts:
+  k8s_info:
     api_version: v1
     kind: ServiceAccount
     name: lando
@@ -28,7 +28,7 @@
     service_account_secret_name: "{{ service_account_response.resources[0]['secrets'][0]['name'] }}"
 
 - name: Fetch lando service account secret details
-  k8s_facts:
+  k8s_info:
     api_version: v1
     kind: Secret
     name: "{{ service_account_secret_name }}"
@@ -43,12 +43,7 @@
     namespace: "{{ namespace_name }}"
     state: present
     definition: "{{ lookup('file', item) }}"
-  with_items:
-    - pod-manager-role.yml
-    - log-reader-role.yml
-    - pvc-manager-role.yml
-    - configmaps-manager-role.yml
-    - job-manager-role.yml
+  with_items: lando_and_calrissian_role_paths
 
 - name: Bind roles for default service account (calrissian)
   k8s:
@@ -65,9 +60,7 @@
       roleRef:
         kind: Role
         name: "{{ item }}"
-  with_items:
-    - pod-manager-role
-    - log-reader-role
+  with_items: calrissian_roles
 
 - name: Bind roles for lando service account
   k8s:
@@ -84,12 +77,7 @@
       roleRef:
         kind: Role
         name: "{{ item }}"
-  with_items:
-    - pvc-manager-role
-    - configmaps-manager-role
-    - job-manager-role
-    - pod-manager-role
-    - log-reader-role
+  with_items: lando_roles
 
 - name: Create DukeDS configuration secret
   k8s:
@@ -102,16 +90,16 @@
         name: ddsclient-agent
       type: Opaque
       data:
-        config: "{{ lookup('file', '../../files/bespin-k8s-ddsclient.json') | b64encode }}"
+        config: "{{ lookup('file', duke_ds_config_path) | b64encode }}"
 
 - name: Create pvc for holding system data
   k8s:
     namespace: "{{ namespace_name }}"
     state: present
-    definition: "{{ lookup('file', 'system-data-pvc.yml') }}"
+    definition: "{{ lookup('file', system_data_pvc_path) }}"
 
 - set_fact:
-    stage_system_data_items: "{{ lookup('file', '../../files/bespin-k8s-stage-system-data_small.json') }}"
+    stage_system_data_items: "{{ lookup('file', stage_system_data_items_path) }}"
 
 - name: Create configmap for loading system data volume
   k8s:
@@ -129,5 +117,5 @@
   k8s:
     namespace: "{{ namespace_name }}"
     state: present
-    definition: "{{ lookup('file', 'k8s-lando-stage-system-data.yml') }}"
+    definition: "{{ lookup('file', stage_data_job_path) }}"
 
