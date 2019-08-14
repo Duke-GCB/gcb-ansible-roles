@@ -2,7 +2,7 @@
 - include: tasks/get-service-account-credentials.yml
   when: cluster_exists
 - include_role:
-    name: bespin_k8s_cluster
+    name: bespin_k8s_namespace
     apply:
       environment:
         K8S_AUTH_API_KEY: "{{ gcloud_k8s_token }}"
