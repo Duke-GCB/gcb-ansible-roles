@@ -26,5 +26,3 @@ if matching_items:
     print("Deleted JobStrategy {}".format(job_strategy_id))
 else:
     print("No JobStrategy with name {} found".format(cluster_name))
-
-
