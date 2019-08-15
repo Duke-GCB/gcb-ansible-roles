@@ -41,3 +41,5 @@ It requires the following variables:
 - `volume_size_factor`: factor used in determining volume size associated with this JobStrategy
 - `duke_ds_config_path`: Path to a ddsclient config file to be used for staging data in the namespace
 - `stage_system_data_items_path`: Path to a list of files to be staged into a system data volume
+
+See defaults/main.yml for optional variables.
