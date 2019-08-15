@@ -118,4 +118,3 @@
     namespace: "{{ namespace_name }}"
     state: present
     definition: "{{ lookup('file', stage_data_job_path) }}"
-

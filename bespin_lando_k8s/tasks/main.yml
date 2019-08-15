@@ -2,16 +2,16 @@
   when: lando_k8s_state|default('present') == "present"
   include_tasks: create-services.yml
   vars:
-    k8s_cluster_name: "{{ item.value.cluster_name | default(item.key) }}"
-    lando_config_path: "/etc/lando_{{ item.key }}_config.yml"
-    lando_k8s: "{{ item.value }}"
-  with_dict:  "{{ k8s_clusters }}"
+    k8s_cluster_name: "{{ item.cluster_name }}"
+    lando_config_path: "/etc/lando_{{ item.cluster_name }}_config.yml"
+    lando_k8s: "{{ item }}"
+  with_items:  "{{ k8s_clusters }}"
 
 - name: Remove lando k8s services for each item in k8s_clusters
   when: lando_k8s_state|default('present') == "absent"
   include_tasks: remove-services.yml
   vars:
-    k8s_cluster_name: "{{ item.value.cluster_name | default(item.key) }}"
-    lando_config_path: "/etc/lando_{{ item.key }}_config.yml"
-    lando_k8s: "{{ item.value }}"
-  with_dict:  "{{ k8s_clusters }}"
+    k8s_cluster_name: "{{ item.cluster_name }}"
+    lando_config_path: "/etc/lando_{{ item.cluster_name }}_config.yml"
+    lando_k8s: "{{ item }}"
+  with_items:  "{{ k8s_clusters }}"
