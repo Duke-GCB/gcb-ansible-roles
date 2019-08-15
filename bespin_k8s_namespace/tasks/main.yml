@@ -1,5 +1,5 @@
-- include: tasks/setup_cluster.yml
+- include: tasks/create_and_setup_namespace.yml
   when: lando_k8s_state|default('present') == "present"
 
-- include: tasks/delete_cluster.yml
+- include: tasks/delete_namespace.yml
   when: lando_k8s_state|default('present') == "absent"
