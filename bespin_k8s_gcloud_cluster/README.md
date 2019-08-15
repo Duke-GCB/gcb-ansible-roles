@@ -42,4 +42,4 @@ It requires the following variables:
 - `duke_ds_config_path`: Path to a ddsclient config file to be used for staging data in the namespace
 - `stage_system_data_items_path`: Path to a list of files to be staged into a system data volume
 
-See defaults/main.yml for optional variables.
+See [defaults/main.yml](defaults/main.yml) for optional variables.
