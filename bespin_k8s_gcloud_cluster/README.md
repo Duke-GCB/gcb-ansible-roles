@@ -1,6 +1,6 @@
 # bespin\_k8s\_gcloud\_cluster
 
-Ansible role to create a google cloud k8s cluster and create a namespace to run bespin jobs in.
+Ansible role to create and setup a google cloud k8s cluster and namespace that allows running jobs via bespin.
 
 ## Requirements
 
@@ -18,6 +18,7 @@ Command line tool requirements:
 
 This role requires gcloud to logged in.
 It requires the following variables:
+- `bespin_settings`: dictionary of settings containing `web.lando_token`, `web.url`, `rabbit.host`, `rabbit.username`, and `rabbit.password` that will be populated in the bespin-api database for this cluster
 - `lando_k8s_state`: either 'present' or 'absent' to remove or add the namespace
 - `gcloud_project_id`: name of the google cloud project to create a cluster within
 - `gcloud_compute_zone`: name of the google cloud zone to create the cluster in
