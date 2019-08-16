@@ -30,13 +30,16 @@
 - name: Initialize Helm so we can use it to setup the nfs-client provisioner
   command: helm init --service-account tiller --wait
 
+- set_fact:
+    storage_class_name: "nfsprovisioner{{ cluster_name }}"
+
 - name: "Create nfs-client-provision for storage with ip address {{ filestore_address }}"
   command: >
     helm upgrade --install
     "nfsprovisioner{{ cluster_name }}"
     stable/nfs-client-provisioner
     --set
-    "storageClass.name=nfsprovisioner{{ cluster_name }}"
+    "storageClass.name={{ storage_class_name }}"
     --set
     "nfs.server={{ filestore_address }}"
     --set

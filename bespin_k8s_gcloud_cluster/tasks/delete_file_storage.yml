@@ -5,10 +5,13 @@
   register: provisioner_exists_results
   when: cluster_exists
 
-- name: "Removing nfs client provisioner nfsprovisioner{{ cluster_name }}"
+- set_fact:
+    storage_class_name: "nfsprovisioner{{ cluster_name }}"
+
+- name: "Removing nfs client provisioner {{ storage_class_name }}"
   command: >
     helm delete --purge
-    "nfsprovisioner{{ cluster_name }}"
+    "{{ storage_class_name }}"
   when: cluster_exists and provisioner_exists_results.stdout != ""
 
 # delete file storage that underlies the k8s persistent volume provisioner above
