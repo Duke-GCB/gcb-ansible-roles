@@ -4,7 +4,7 @@ Ansible role to create and setup a google cloud k8s cluster and namespace that a
 
 ## Requirements
 
-Uses the [bespin_k8s_namespace](../bespin_k8s_namespace/README.md) ansible role, so install it's requirements.
+Uses the [bespin_k8s_namespace](../bespin_k8s_namespace/README.md) ansible role, so install its requirements.
 
 Command line tool requirements:
 - gcloud has been installed (including [beta components](https://cloud.google.com/sdk/gcloud/reference/components/install)) and is authenticated to google cloud
