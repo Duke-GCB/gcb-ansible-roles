@@ -25,7 +25,10 @@
     filestore_address: "{{ filestore_address_result['stdout'] }}"
 
 - name: Create tiller service account
-  command: "kubectl apply -f {{ role_path }}/files/helm-rbac-config.yaml"
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('file', 'helm-rbac-config.yaml') }}"
 
 - name: Initialize Helm so we can use it to setup the nfs-client provisioner
   command: helm init --service-account tiller --wait
