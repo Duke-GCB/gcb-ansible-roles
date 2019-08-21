@@ -3,9 +3,7 @@
 - include_role:
     name: bespin_k8s_namespace
     apply:
-      environment:
-        K8S_AUTH_API_KEY: "{{ gcloud_k8s_token }}"
-        K8S_AUTH_HOST: "{{ gcloud_k8s_host }}"
-        K8S_AUTH_SSL_CA_CERT  : "{{ gcloud_k8s_ca_path }}"
+      environment: "{{ gcloud_k8s_env }}"
 - include: tasks/create_file_storage.yml
+  environment: "{{ gcloud_k8s_env }}"
 - include: tasks/update_bespin_api_connection.yml
