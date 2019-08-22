@@ -1,5 +1,8 @@
-# Expects appropriate environment variables specifying ks8 configuration to already be set.
-# See https://docs.ansible.com/ansible/latest/modules/k8s_module.html
+# Cleanup system data necessary before cluster can be deleted without leaking system data persistent volumes.
+# In order for system data persistent volumes to be cleaned up:
+# 1. Any jobs and pods accessing these volumes must be deleted
+# 2. The associated PersistentVolumeClaim must be deleted
+# 3. The background process that deletes the persistent volumes must be given time to finish.
 
 - name: Remove stage system data job (to allow teardown before stage system data finishes)
   k8s:
@@ -25,14 +28,6 @@
     namespace: "{{ namespace_name }}"
     state: absent
   with_items: "{{ stage_system_data_pods.resources }}"
-
-- name: Get pvc info
-  k8s_info:
-    api_version: v1
-    kind: PersistentVolumeClaim
-    name: "{{ system_data_item.pvc_name }}"
-    namespace: "{{ namespace_name }}"
-  register: sytem_data_pvc
 
 - name: Delete pvc for holding system data
   k8s:

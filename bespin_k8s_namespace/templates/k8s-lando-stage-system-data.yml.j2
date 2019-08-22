@@ -2,8 +2,13 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "{{ system_data_item.pvc_name }}"
+  labels:
+    bespin_system_data: "true"
 spec:
   template:
+    metadata:
+      labels:
+        bespin_system_data: "true"
     spec:
       initContainers:
       - name: change-permissions

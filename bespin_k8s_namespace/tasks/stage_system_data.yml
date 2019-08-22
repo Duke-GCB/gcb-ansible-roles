@@ -6,7 +6,9 @@
       apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:
-       name: "{{ system_data_item.pvc_name }}"
+        name: "{{ system_data_item.pvc_name }}"
+        labels:
+          bespin_system_data: "true"
       spec:
        accessModes:
         - ReadWriteOnce
@@ -27,6 +29,8 @@
       kind: ConfigMap
       metadata:
         name: "{{ system_data_item.pvc_name}}"
+      labels:
+        bespin_system_data: "true"
       data:
         bespin-k8s-stage-data.json: "{{ stage_system_data_items | to_json }}"
 
