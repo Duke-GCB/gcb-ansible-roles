@@ -1,9 +1,9 @@
 - include: tasks/create_k8s_cluster.yml
-- include: tasks/get-service-account-credentials.yml
+- include: tasks/get-kubeconfig-credentials.yml
 - include_role:
     name: bespin_k8s_namespace
     apply:
-      environment: "{{ gcloud_k8s_env }}"
+      environment: "{{ k8s_auth_env }}"
 - include: tasks/create_file_storage.yml
-  environment: "{{ gcloud_k8s_env }}"
+  environment: "{{ k8s_auth_env }}"
 - include: tasks/update_bespin_api_connection.yml

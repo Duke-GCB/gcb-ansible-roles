@@ -1,11 +1,13 @@
 - include: tasks/update_bespin_api_connection.yml
-- include: tasks/get-service-account-credentials.yml
+- include: tasks/get-kubeconfig-credentials.yml
   when: cluster_exists
 - include_role:
     name: bespin_k8s_namespace
     apply:
-      environment: "{{ gcloud_k8s_env }}"
+      environment: "{{ k8s_auth_env }}"
   when: cluster_exists
 - include: tasks/delete_file_storage.yml
-  environment: "{{ gcloud_k8s_env }}"
+  environment: "{{ k8s_auth_env }}"
+  when: cluster_exists
 - include: tasks/delete_k8s_cluster.yml
+  when: cluster_exists
