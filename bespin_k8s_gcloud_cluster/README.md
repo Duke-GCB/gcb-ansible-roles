@@ -9,7 +9,7 @@ Uses the [bespin_k8s_namespace](../bespin_k8s_namespace/README.md) ansible role,
 Command line tool requirements:
 - gcloud has been installed (including [beta components](https://cloud.google.com/sdk/gcloud/reference/components/install)) and is authenticated to google cloud
 - kubectl has been installed
-- ansible has been installed
+- ansible has been installed (Requires `devel` branch or `2.9` or later once released)
 - helm has been installed
 - python and the requests module have been installed (used to communicate with bespin-api)
 - connected to the bespin-api network

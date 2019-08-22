@@ -44,6 +44,7 @@
   register: deleted_pvc
 
 - name: "Wait for a few seconds so the k8s background process has time to delete the pv associated with the system-data pvc"
+  # This likely happens right before the cluster is destroyed and may leak persistent volumes without this pause.
   pause:
     seconds: "{{ sleep_after_deleting_pvc_seconds }}"
   when: deleted_pvc.changed
