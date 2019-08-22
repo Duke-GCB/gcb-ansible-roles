@@ -1,5 +1,20 @@
+# Expects appropriate environment variables specifying ks8 configuration to already be set.
+# See https://docs.ansible.com/ansible/latest/modules/k8s_module.html
+
 - include: tasks/create_and_setup_namespace.yml
   when: lando_k8s_state|default('present') == "present"
+
+- include: tasks/stage_system_data.yml
+  when: lando_k8s_state|default('present') == "present"
+  vars:
+    system_data_item: "{{ item }}"
+  with_items: "{{ stage_system_data_ary }}"
+
+- include: tasks/cleanup_system_data.yml
+  when: lando_k8s_state|default('present') == "absent"
+  vars:
+    system_data_item: "{{ item }}"
+  with_items: "{{ stage_system_data_ary }}"
 
 - include: tasks/delete_namespace.yml
   when: lando_k8s_state|default('present') == "absent"

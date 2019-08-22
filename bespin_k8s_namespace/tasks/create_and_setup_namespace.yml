@@ -91,30 +91,3 @@
       type: Opaque
       data:
         config: "{{ lookup('file', duke_ds_config_path) | b64encode }}"
-
-- name: Create pvc for holding system data
-  k8s:
-    namespace: "{{ namespace_name }}"
-    state: present
-    definition: "{{ lookup('file', system_data_pvc_path) }}"
-
-- set_fact:
-    stage_system_data_items: "{{ lookup('file', stage_system_data_items_path) }}"
-
-- name: Create configmap for loading system data volume
-  k8s:
-    state: present
-    namespace: "{{ namespace_name }}"
-    definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: stage-exome-seq-data
-      data:
-        bespin-k8s-stage-system-data.json: "{{ stage_system_data_items | to_json }}"
-
-- name: Run job to stage system data volume
-  k8s:
-    namespace: "{{ namespace_name }}"
-    state: present
-    definition: "{{ lookup('file', stage_data_job_path) }}"

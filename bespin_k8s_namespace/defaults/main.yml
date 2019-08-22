@@ -13,5 +13,5 @@ lando_roles:
   - job-manager-role
   - pod-manager-role
   - log-reader-role
-system_data_pvc_path: system-data-pvc.yml
-stage_data_job_path: k8s-lando-stage-system-data.yml
+stage_data_job_path: k8s-lando-stage-system-data.yml.j2
+sleep_after_deleting_pvc_seconds: 2

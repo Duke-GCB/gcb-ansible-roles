@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: stage-input-data
+  name: "{{ system_data_item.pvc_name }}"
 spec:
   template:
     spec:
@@ -23,24 +23,24 @@ spec:
         - "python"
         - "-m"
         - "lando_util.stagedata"
-        - "/etc/system-data/bespin-k8s-stage-system-data.json"
-        - "exomeseq-metadata.json"
+        - "/etc/stage-data/bespin-k8s-stage-data.json"
+        - "{{ system_data_item.metadata_filename }}"
         volumeMounts:
         - mountPath: /system-data
           name: system-data
         - name: ddsclient-config
           mountPath: "/etc/ddsclient"
           readOnly: true
-        - name: stage-exome-seq-data
-          mountPath: /etc/system-data
+        - name: stage-data
+          mountPath: /etc/stage-data
       restartPolicy: OnFailure
       volumes:
       - name: system-data
         persistentVolumeClaim:
-          claimName: system-data
+          claimName: "{{ system_data_item.pvc_name }}"
       - name: ddsclient-config
         secret:
           secretName: ddsclient-agent
-      - name: stage-exome-seq-data
+      - name: stage-data
         configMap:
-          name: stage-exome-seq-data
+          name: "{{ system_data_item.pvc_name }}"
