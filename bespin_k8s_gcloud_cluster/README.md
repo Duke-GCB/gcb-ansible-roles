@@ -45,6 +45,6 @@ It requires the following variables:
   - `dds_files_path`: Path to json file containing dds files to be staged
   - `pvc_name`: Name used for the pvc created to hold this data
   - `pvc_size`: Size of pvc to be created
-  - `metadata_filename`: Name of file saved after downloading that contains metadata about files downloaded.  
+  - `metadata_filename`: Name of file saved after downloading that contains metadata about files downloaded.
 
 See [defaults/main.yml](defaults/main.yml) for optional variables.
