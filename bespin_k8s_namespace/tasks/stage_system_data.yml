@@ -1,0 +1,41 @@
+- name: Create pvc for holding system data
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: "{{ system_data_item.pvc_name }}"
+        labels:
+          bespin_system_data: "true"
+      spec:
+       accessModes:
+        - ReadWriteOnce
+        - ReadOnlyMany
+       resources:
+         requests:
+           storage: "{{ system_data_item.pvc_size }}"
+
+- set_fact:
+    stage_system_data_items: "{{ lookup('file', system_data_item.dds_files_path) }}"
+
+- name: Create configmap for loading system data volume
+  k8s:
+    state: present
+    namespace: "{{ namespace_name }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ system_data_item.pvc_name}}"
+      labels:
+        bespin_system_data: "true"
+      data:
+        bespin-k8s-stage-data.json: "{{ stage_system_data_items | to_json }}"
+
+- name: "Run job to stage system data {{ system_data_item.pvc_name }}"
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('template', stage_data_job_path) }}"

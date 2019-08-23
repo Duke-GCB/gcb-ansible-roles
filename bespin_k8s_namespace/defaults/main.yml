@@ -1,0 +1,17 @@
+lando_and_calrissian_role_paths:
+  - pod-manager-role.yml
+  - log-reader-role.yml
+  - pvc-manager-role.yml
+  - configmaps-manager-role.yml
+  - job-manager-role.yml
+calrissian_roles:
+  - pod-manager-role
+  - log-reader-role
+lando_roles:
+  - pvc-manager-role
+  - configmaps-manager-role
+  - job-manager-role
+  - pod-manager-role
+  - log-reader-role
+stage_data_job_path: k8s-lando-stage-system-data.yml.j2
+sleep_after_deleting_pvc_seconds: 2

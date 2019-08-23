@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ system_data_item.pvc_name }}"
+  labels:
+    bespin_system_data: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        bespin_system_data: "true"
+    spec:
+      initContainers:
+      - name: change-permissions
+        image: busybox:1.28
+        command: ['chmod', '-R', '0775', '/system-data']
+        volumeMounts:
+        - mountPath: /system-data
+          name: system-data
+      containers:
+      - name: stage-input-data
+        image: dukegcb/lando-util:0.5.3
+        workingDir: /system-data
+        env:
+        - name: DDSCLIENT_CONF
+          value: "/etc/ddsclient/config"
+        command:
+        - "python"
+        - "-m"
+        - "lando_util.stagedata"
+        - "/etc/stage-data/bespin-k8s-stage-data.json"
+        - "{{ system_data_item.metadata_filename }}"
+        volumeMounts:
+        - mountPath: /system-data
+          name: system-data
+        - name: ddsclient-config
+          mountPath: "/etc/ddsclient"
+          readOnly: true
+        - name: stage-data
+          mountPath: /etc/stage-data
+      restartPolicy: OnFailure
+      volumes:
+      - name: system-data
+        persistentVolumeClaim:
+          claimName: "{{ system_data_item.pvc_name }}"
+      - name: ddsclient-config
+        secret:
+          secretName: ddsclient-agent
+      - name: stage-data
+        configMap:
+          name: "{{ system_data_item.pvc_name }}"

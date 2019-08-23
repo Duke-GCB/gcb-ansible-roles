@@ -1,0 +1,45 @@
+# Cleanup system data necessary before cluster can be deleted without leaking system data persistent volumes.
+# In order for system data persistent volumes to be cleaned up:
+# 1. Any jobs and pods accessing these volumes must be deleted
+# 2. The associated PersistentVolumeClaim must be deleted
+# 3. The background process that deletes the persistent volumes must be given time to finish.
+
+- name: Remove stage system data job (to allow teardown before stage system data finishes)
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: absent
+    api_version: batch/v1
+    kind: Job
+    name: "{{ system_data_item.pvc_name }}"
+
+- name: List any pods created by stage system data job
+  k8s_info:
+    namespace: "{{ namespace_name }}"
+    kind: Pod
+    label_selectors:
+      - job-name = stage-input-data
+  register: stage_system_data_pods
+
+- name: Remove stage system data pods since these are not automatically deleted with job above
+  k8s:
+    api_version: v1
+    kind: Pod
+    name: "{{ item.metadata.name }}"
+    namespace: "{{ namespace_name }}"
+    state: absent
+  with_items: "{{ stage_system_data_pods.resources }}"
+
+- name: Delete pvc for holding system data
+  k8s:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: "{{ system_data_item.pvc_name }}"
+    namespace: "{{ namespace_name }}"
+    state: absent
+  register: deleted_pvc
+
+- name: "Wait for a few seconds so the k8s background process has time to delete the pv associated with the system-data pvc"
+  # This likely happens right before the cluster is destroyed and may leak persistent volumes without this pause.
+  pause:
+    seconds: "{{ sleep_after_deleting_pvc_seconds }}"
+  when: deleted_pvc.changed
