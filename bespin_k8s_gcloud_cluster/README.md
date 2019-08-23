@@ -41,7 +41,7 @@ It requires the following variables:
 - `volume_size_base`: Base volume size in GB associated with JobStrategy that will be created for jobs in this cluster
 - `volume_size_factor`: factor used in determining volume size associated with this JobStrategy
 - `duke_ds_config_path`: Path to a ddsclient config file to be used for staging data in the namespace
-- `stage_system_data_ary`: Array if system data volumes to stage with properties:
+- `stage_system_data_ary`: Array of system data volumes to stage with properties:
   - `dds_files_path`: Path to json file containing dds files to be staged
   - `pvc_name`: Name used for the pvc created to hold this data
   - `pvc_size`: Size of pvc to be created
