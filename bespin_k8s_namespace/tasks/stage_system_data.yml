@@ -18,7 +18,7 @@
            storage: "{{ system_data_item.pvc_size }}"
 
 - set_fact:
-    stage_system_data_items: "{{ lookup('file', stage_system_data_items_path) }}"
+    stage_system_data_items: "{{ lookup('file', system_data_item.dds_files_path) }}"
 
 - name: Create configmap for loading system data volume
   k8s:
