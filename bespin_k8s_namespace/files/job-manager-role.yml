@@ -3,6 +3,6 @@ kind: Role
 metadata:
   name: job-manager-role
 rules:
-- apiGroups: [""]
-  resources: ["jobs.batch"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
   verbs: ["create", "delete", "list", "watch"]

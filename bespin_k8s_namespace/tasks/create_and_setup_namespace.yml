@@ -36,7 +36,7 @@
   register: secret_response
 
 - set_fact:
-    service_account_token: "{{ secret_response.resources[0]['data']['token'] }}"
+    k8s_service_account_token: "{{ secret_response.resources[0]['data']['token'] | b64decode }}"
 
 - name: Create roles for use by lando and calrissian
   k8s:
