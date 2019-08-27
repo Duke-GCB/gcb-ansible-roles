@@ -1,3 +1,9 @@
+- set_fact:
+    ca_cert_filename: "{{ ca_cert_dir }}/lando_k8s_ca.crt"
+
+- name: Install gcloud_k8s cert
+  copy: content="{{ item.ssl_ca_cert_data }}" dest="{{ ca_cert_filename}}"
+
 - name: "Setup lando config {{ lando_config_path }}"
   template:
     src: lando_k8s_config.yml.j2
@@ -9,6 +15,7 @@
     name: "bespin-lando-k8s-{{ k8s_cluster_name }}"
     volumes:
       - "{{ lando_config_path }}:{{ lando_config_path }}:ro"
+      - "{{ ca_cert_dir }}:{{ ca_cert_dir }}:ro"
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
@@ -20,6 +27,7 @@
     name: "bespin-watcher-k8s-{{ k8s_cluster_name }}"
     volumes:
       - "{{ lando_config_path }}:{{ lando_config_path }}:ro"
+      - "{{ ca_cert_dir }}:{{ ca_cert_dir }}:ro"
     etc_hosts: "{{ bespin_hosts_list }}"
     state: started
     restart_policy: always
