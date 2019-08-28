@@ -11,6 +11,7 @@ cluster_api_settings:
   token: "{{ lando_k8s.token }}"
   namespace: "{{ lando_k8s.namespace }}"
   verify_ssl: {{ lando_k8s.verify_ssl }}
+  ssl_ca_cert: {{ ca_cert_filename }}
 
 bespin_api:
   token: "{{ bespin_settings.web.lando_token }}"
