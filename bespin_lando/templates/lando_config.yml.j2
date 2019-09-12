@@ -15,3 +15,7 @@ bespin_api:
   url: "{{ bespin_settings.web.url }}"
   token: "{{ bespin_settings.web.lando_token }}"
 log_level: "{{ bespin_settings.lando.log_level}}"
+commands:
+  stage_data_command: {{ bespin_settings.lando.stage_data_command | to_json }}
+  organize_output_command: {{ bespin_settings.lando.organize_output_command | to_json }}
+  save_output_command: {{ bespin_settings.lando.save_output_command | to_json }}

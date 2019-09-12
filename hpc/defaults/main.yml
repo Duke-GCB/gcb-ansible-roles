@@ -14,4 +14,4 @@ hpc:
     - mysql-devel
     - squashfs-tools
     - singularity
-    
+    - librsvg2

@@ -15,7 +15,7 @@
       - unzip
       - tcsh
       - evince
-      - firefox
+      - firefox-38.7.0-1.el7_2
       - xorg-x11-xauth
       - xorg-x11-apps
       - xorg-x11-xinit
@@ -107,10 +107,11 @@
   pip:
     name: cutadapt
     version: 1.14
-- name: Install development version of MultiQC
+- name: Install MultiQC
   become: yes
   pip:
     name: multiqc
+    extra_args: "--ignore-installed"
 - name: Install HTSeq
   become: yes
   pip:

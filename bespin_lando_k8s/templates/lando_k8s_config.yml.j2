@@ -1,0 +1,20 @@
+work_queue:
+  host: "{{ bespin_settings.rabbit.host }}"
+  username: "{{ bespin_settings.rabbit.username }}"
+  password: "{{ bespin_settings.rabbit.password }}"
+  worker_username: "{{ bespin_settings.rabbit.worker_username }}"
+  worker_password: "{{ bespin_settings.rabbit.worker_password }}"
+  listen_queue: "{{ lando_k8s.listen_queue }}"
+
+cluster_api_settings:
+  host: "{{ lando_k8s.host }}"
+  token: "{{ lando_k8s.token }}"
+  namespace: "{{ lando_k8s.namespace }}"
+  verify_ssl: {{ lando_k8s.verify_ssl }}
+  ssl_ca_cert: {{ ca_cert_filename }}
+
+bespin_api:
+  token: "{{ bespin_settings.web.lando_token }}"
+  url: "{{ bespin_settings.web.url }}"
+
+{{ lando_k8s.config_file_data | to_yaml }}

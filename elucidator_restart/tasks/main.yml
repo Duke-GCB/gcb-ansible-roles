@@ -52,7 +52,7 @@
 
 - name: Create app container
   docker_container:
-    image: quay.io/dukegcb/elucidator-restart
+    image: "{{ elucidator_config.build.image_name }}:{{ elucidator_config.build.version }}"
     name: web
     env:
       ELUCIDATOR_HOST: "{{ elucidator_config.target_host}}"
@@ -61,6 +61,5 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: true
     state: started
     restart_policy: always

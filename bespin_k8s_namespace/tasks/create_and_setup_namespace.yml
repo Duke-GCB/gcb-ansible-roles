@@ -1,0 +1,93 @@
+# Expects appropriate environment variables specifying ks8 configuration to already be set.
+# See https://docs.ansible.com/ansible/latest/modules/k8s_module.html
+
+- name: "Create a {{ namespace_name }} namespace"
+  k8s:
+    name: "{{ namespace_name }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: "Create lando service account in {{ namespace_name }}"
+  k8s:
+    name: lando
+    api_version: v1
+    kind: ServiceAccount
+    state: present
+    namespace: "{{ namespace_name }}"
+
+- name: "Read lando service account"
+  k8s_info:
+    api_version: v1
+    kind: ServiceAccount
+    name: lando
+    namespace: "{{ namespace_name }}"
+  register: service_account_response
+
+- set_fact:
+    service_account_secret_name: "{{ service_account_response.resources[0]['secrets'][0]['name'] }}"
+
+- name: Fetch lando service account secret details
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ service_account_secret_name }}"
+    namespace: "{{ namespace_name }}"
+  register: secret_response
+
+- set_fact:
+    k8s_service_account_token: "{{ secret_response.resources[0]['data']['token'] | b64decode }}"
+
+- name: Create roles for use by lando and calrissian
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('file', item) }}"
+  with_items: "{{ lando_and_calrissian_role_paths }}"
+
+- name: Bind roles for default service account (calrissian)
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition:
+      apiVersion: "rbac.authorization.k8s.io/v1"
+      kind: RoleBinding
+      metadata:
+        name: "{{ item }}-default-binding"
+      subjects:
+      - kind: ServiceAccount
+        name: default
+      roleRef:
+        kind: Role
+        name: "{{ item }}"
+  with_items: "{{ calrissian_roles }}"
+
+- name: Bind roles for lando service account
+  k8s:
+    state: present
+    namespace: "{{ namespace_name }}"
+    definition:
+      apiVersion: "rbac.authorization.k8s.io/v1"
+      kind: RoleBinding
+      metadata:
+        name: "{{ item }}-lando-binding"
+      subjects:
+      - kind: ServiceAccount
+        name: lando
+      roleRef:
+        kind: Role
+        name: "{{ item }}"
+  with_items: "{{ lando_roles }}"
+
+- name: Create DukeDS configuration secret
+  k8s:
+    state: present
+    namespace: "{{ namespace_name }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: ddsclient-agent
+      type: Opaque
+      data:
+        config: "{{ lookup('file', duke_ds_config_path) | b64encode }}"

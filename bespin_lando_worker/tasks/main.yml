@@ -9,27 +9,46 @@
     packages:
     - nfs-common
     - libssl-dev
+    - nodejs
 
-- pip:
-    name: "git+git://github.com/Duke-GCB/lando.git@{{ lando_version }}"
+- name: Install lando from PyPI
+  pip:
+    name: lando
+    version: "{{ lando_version }}"
+    executable: pip3
+  when: lando_install_source == 'PyPI'
+
+- name: Install lando from git
+  pip:
+    name: "git+git://github.com/Duke-GCB/lando.git@{{ lando_github_version }}"
     editable: false
     executable: pip3
+  when: lando_install_source == 'GitHub'
 
 - name: Check where lando_worker has been installed to
   command: which lando_worker
   register: which_lando_worker
   changed_when: no
 
-- pip:
+- name: Install utility package from PyPI
+  pip:
+    name: "{{ util_package_name }}"
+    version: "{{ util_package_version }}"
+    executable: pip3
+
+- name: Install html5lib via pip
+  pip:
     name: html5lib
     executable: pip3
 
-- pip:
+- name: Install CWL runner
+  pip:
     name: "{{ cwl_runner }}"
     version: "{{ cwl_runner_version }}"
     executable: pip3
 
-- file:
+- name: Make lando work directory
+  file:
     dest: "{{ lando_work_directory }}"
     state: directory
     owner: ubuntu
@@ -51,7 +70,8 @@
       [Install]
       WantedBy=multi-user.target
 
-- service:
+- name: Start lando_worker service
+  service:
     name: lando_worker
     state: started
     enabled: yes

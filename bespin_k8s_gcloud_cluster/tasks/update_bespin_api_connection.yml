@@ -1,0 +1,26 @@
+- name: Populate bespin-api database with settings for the k8s cluster
+  command: >
+    python
+    "{{ role_path }}/files/add-setup-to-bespin-db.py"
+  environment:
+    BESPIN_API_TOKEN: "{{ bespin_settings.web.lando_token }}"
+    BESPIN_API_URL: "{{ bespin_settings.web.url }}"
+    RABBIT_HOST: "{{ bespin_settings.rabbit.host }}"
+    RABBIT_USERNAME: "{{ bespin_settings.rabbit.username }}"
+    RABBIT_PASSWORD: "{{ bespin_settings.rabbit.password }}"
+    CLUSTER_NAME: "{{ cluster_name }}"
+    JOB_RUNTIME_K8S_ID: "{{ job_runtime_k8s_id }}"
+    JOB_FLAVOR_ID: "{{ job_flavor_id }}"
+    VOLUME_SIZE_BASE: "{{ volume_size_base }}"
+    VOLUME_SIZE_FACTOR: "{{ volume_size_factor }}"
+  when: lando_k8s_state|default('present') == "present"
+
+- name: Disable bespin-api database with settings for the k8s cluster
+  command: >
+    python
+    "{{ role_path }}/files/remove-setup-from-bespin-db.py"
+  environment:
+    BESPIN_API_TOKEN: "{{ bespin_settings.web.lando_token }}"
+    BESPIN_API_URL: "{{ bespin_settings.web.url }}"
+    CLUSTER_NAME: "{{ cluster_name }}"
+  when: lando_k8s_state|default('present') == "absent"

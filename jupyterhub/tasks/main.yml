@@ -268,6 +268,8 @@
     marker: "# {mark} ANSIBLE MANAGED SLURM CONFIG"
     block: |
       c.Spawner.args = ['--NotebookApp.iopub_data_rate_limit=1000000000']
+      c.Spawner.http_timeout = 90 # Up from default of 30
+      c.Spawner.start_timeout = 180 # up from default of 60
       c.SlurmSpawner.req_partition = '{{ slurm_partition }}'
       c.BatchSpawnerBase.req_runtime = '{{ req_runtime }}'
       c.BatchSpawnerBase.req_memory = '{{ req_memory }}'
@@ -283,8 +285,24 @@
       #SBATCH --uid={username}
       #SBATCH --get-user-env=L
       #SBATCH {options}
-      {{ load_jupyterhub_path }}
-      which jupyterhub-singleuser
+
+      if [ -f {homedir}/{{spawner_rc_file_name}} ]; then
+        echo "Sourcing {homedir}/{{spawner_rc_file_name}}"
+        source {homedir}/{{spawner_rc_file_name}}
+        JHS_CMD=$(which jupyterhub-singleuser)
+        RESULT=$?
+        if [ $RESULT -eq 0 ] ; then
+          echo "Using $JHS_CMD"
+        else
+          echo "Unable to launch jupyter notebook - Spawner could not locate 'jupyterhub-singleuser' command in PATH."
+          echo "If you intend to use a custom environment, please visit https://wiki.duke.edu/display/HAR/Using+JupyterHub+on+HARDAC for more information."
+          echo "You can also remove your {{spawner_rc_file_name}} file and use the default environment."
+          exit 1
+        fi
+      else
+        # No spawner rc file, activate the default environment providing jupyterhub-singleuser
+        {{ load_jupyterhub_path }}
+      fi
       {cmd}
       """
 

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+BACKUP_DIR="{{ nfs_mount_dir }}"
+BACKUP_PATH=${BACKUP_DIR}/{{ backup_filename_prefix }}.$(date +%Y-%m-%d-%H%M%S).sql
+
+mkdir -p $BACKUP_DIR
+
+docker run --rm {{ docker_network_flag }} \
+   -e  PGHOST={{ database_host }} \
+   -e  PGPORT={{ database_port }} \
+   -e  PGDATABASE={{ database_name }} \
+   -e  PGUSER={{ database_username }} \
+   -e  PGPASSWORD={{ database_password }} \
+   {{ database_image }} pg_dump > $BACKUP_PATH

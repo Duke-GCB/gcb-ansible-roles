@@ -6,13 +6,8 @@
         dest="{{ d4s2_nginx.conf_dir }}/{{ d4s2_nginx.conf_file }}"
         mode=0400
         setype="svirt_sandbox_file_t"
-  tags: ['api','ui']
-- name: Login to docker registry
-  docker_login:
-    registry: "{{ docker_registry }}"
-    username: "{{ docker_username }}"
-    password: "{{ docker_password }}"
-  when: docker_registry is defined
+  notify:
+  - restart web
   tags: ['api','ui']
 - name: Create Database container
   docker_container:
@@ -23,7 +18,7 @@
     env: "{{ d4s2_docker_env }}"
     volumes:
       - /var/lib/postgresql/data:/var/lib/postgresql/data
-    pull: true
+    pull: false
     state: started
     restart_policy: always
   tags: ['api']
@@ -34,10 +29,24 @@
     networks:
       - name: "{{ d4s2_docker_network }}"
     env: "{{ d4s2_docker_env }}"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
+  notify:
+  - restart web
   tags: ['api']
+- name: Create download service container
+  docker_container:
+    image: "{{ d4s2_docker_image }}"
+    name: d4s2-download
+    networks:
+      - name: "{{ d4s2_docker_network }}"
+    env: "{{ d4s2_docker_env | combine({'GUNICORN_CMD_ARGS':'--worker-class gevent'})}}"
+    pull: false
+    state: started
+    restart_policy: always
+  notify:
+  - restart web
 - name: Create task processor container
   docker_container:
     image: "{{ d4s2_docker_image }}"
@@ -45,7 +54,7 @@
     networks:
       - name: "{{ d4s2_docker_network }}"
     env: "{{ d4s2_docker_env }}"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
     command: python manage.py process_tasks
@@ -58,6 +67,8 @@
       - name: "{{ d4s2_docker_network }}"
     state: started
     restart_policy: always
+  notify:
+  - restart web
   tags: ['ui']
 - name: Create reverse proxy web container
   docker_container:
@@ -72,7 +83,7 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: true
+    pull: false
     state: started
     restart_policy: always
   tags: ['api','ui']

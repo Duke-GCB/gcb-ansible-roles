@@ -1,6 +1,8 @@
-lando_version: master
+lando_install_source: PyPI
+lando_github_version: master
 cwl_runner: cwltool
 cwl_runner_version: latest
 lando_work_directory: /work
 worker_mount_name: /data
 worker_mount_src: bespin-nfs:/mnt/bespin_datasets
+util_package_name: lando-util

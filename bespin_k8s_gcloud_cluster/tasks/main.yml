@@ -1,0 +1,13 @@
+- name: "Connecting to google cloud project {{ gcloud_project_id }}"
+  command: gcloud config set project "{{ gcloud_project_id }}"
+
+- name: "Enable file.googleapis.com to allow managing file storage"
+  command: gcloud services enable file.googleapis.com
+
+- include: tasks/check_gcloud_cluster_status.yml
+
+- include: tasks/create_cluster.yml
+  when: lando_k8s_state|default('present') == "present"
+
+- include: tasks/delete_cluster.yml
+  when: lando_k8s_state|default('present') == "absent"

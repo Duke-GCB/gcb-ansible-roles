@@ -1,0 +1,49 @@
+# The following is based on https://cloud.google.com/community/tutorials/gke-filestore-dynamic-provisioning
+# Create filestore containing a single fileshare that can be mounted ReadWriteMany.
+# Used to store input data, intermediate results, and output data
+- name: "Creating file storage named {{ filestore_name }} supporting ReadWriteMany PVCs"
+  command: >
+    gcloud filestore instances create
+    "{{ filestore_name }}"
+    "--zone={{ gcloud_compute_zone }}"
+    "--description={{ filestore_description }}"
+    "--tier={{ file_store_tier }}"
+    "--network=name={{ filestore_network_name }}"
+    "--file-share=name=bespin_fileshare,capacity={{ file_share_capacity }}"
+  when: not filestore_exists
+
+- name: "Get file storage filestore{{ cluster_name }} IP address"
+  command: >
+    gcloud beta filestore instances describe
+    "{{ filestore_name }}"
+    "--project={{ gcloud_project_id }}"
+    "--zone={{ gcloud_compute_zone }}"
+    --format="value(networks.ipAddresses[0])"
+  register: filestore_address_result
+
+- set_fact:
+    filestore_address: "{{ filestore_address_result['stdout'] }}"
+
+- name: Create tiller service account
+  k8s:
+    namespace: "{{ namespace_name }}"
+    state: present
+    definition: "{{ lookup('file', 'helm-rbac-config.yaml') }}"
+
+- name: Initialize Helm so we can use it to setup the nfs-client provisioner
+  command: helm init --service-account tiller --wait
+
+- set_fact:
+    storage_class_name: "nfsprovisioner{{ cluster_name }}"
+
+- name: "Create nfs-client-provision for storage with ip address {{ filestore_address }}"
+  command: >
+    helm upgrade --install
+    "nfsprovisioner{{ cluster_name }}"
+    stable/nfs-client-provisioner
+    --set
+    "storageClass.name={{ storage_class_name }}"
+    --set
+    "nfs.server={{ filestore_address }}"
+    --set
+    "nfs.path=/bespin_fileshare"

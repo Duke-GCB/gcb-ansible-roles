@@ -1,0 +1,8 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pvc-manager-role
+rules:
+- apiGroups: [""]
+  resources: ["pvc"]
+  verbs: ["create", "delete", "list", "watch"]

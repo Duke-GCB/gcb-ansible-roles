@@ -2,7 +2,7 @@
 
 - name: Create web portal container
   docker_container:
-    image: dukegcb/imads-apache
+    image: "{{ imads.web.build.image_name }}:{{ imads.web.build.version }}-apache"
     name: web
     networks:
       - name: "{{ imads.network }}"
@@ -13,6 +13,6 @@
     ports:
       - "80:80"
       - "443:443"
-    pull: true
+    pull: false
     state: started
     restart_policy: always

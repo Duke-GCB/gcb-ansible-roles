@@ -1,0 +1,3 @@
+database_port: "5432"
+backup_filename_prefix: "backup"
+backup_user_home: "/home/postgresbackup/"
