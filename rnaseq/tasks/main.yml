@@ -10,7 +10,7 @@
       - unzip
       - tcsh
       - evince
-      - firefox-38.7.0-1.el7_2
+      - firefox
       - xorg-x11-xauth
       - xorg-x11-apps
       - xorg-x11-xinit
