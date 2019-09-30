@@ -1,0 +1,50 @@
+- name: Create network
+  gcp_compute_network:
+    name: rnaseq-network
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: "{{ gcp_state }}"
+  register: network
+
+# TODO: Do this for a fleet
+- name: create addresses
+  gcp_compute_address:
+    name: "address-{{ item }}"
+    region: us-central1
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: "{{ gcp_state }}"
+  register: addresses
+  loop: "{{ gcp_rnaseq_vms }}"
+
+- name: create an instance
+  gcp_compute_instance:
+    name: "rnaseq-{{ item }}"
+    machine_type: "{{ gcp_machine_type }}"
+    initialize_params:
+      disk_size_gb: 25
+      source_image: "{{ gcp_image_name }}"
+    network_interfaces:
+    - network: "{{ network }}"
+      access_configs:
+      - name: External NAT
+        nat_ip: "{{ addresses[loop_idx] }}"
+        type: ONE_TO_ONE_NAT
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: "{{ gcp_state }}"
+  register: instances
+  loop: "{{ gcp_rnaseq_vms }}"
+  loop_control:
+    index_var: loop_idx
+
+# TODO: SSH security group
+# TODO: Print IP address
+# TODO: set username/password
+# TODO mount storage
+
+# TODO: Instance templates?
