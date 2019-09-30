@@ -7,8 +7,22 @@
     state: "{{ gcp_state }}"
   register: network
 
+- name: Allow SSH access
+  gcp_compute_firewall:
+    name: rnaseq-firewall
+    allowed:
+    - ip_protocol: tcp
+      ports:
+      - '22'
+    project: "{{ gcp_project_id }}"
+    network: "{{ network }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: "{{ gcp_state }}"
+  register: firewall
+
 # TODO: Do this for a fleet
-- name: create addresses
+- name: Create Network Addresses
   gcp_compute_address:
     name: "address-{{ item }}"
     region: us-central1
@@ -19,18 +33,23 @@
   register: addresses
   loop: "{{ gcp_rnaseq_vms }}"
 
-- name: create an instance
+- name: Create Instances
   gcp_compute_instance:
     name: "rnaseq-{{ item }}"
     machine_type: "{{ gcp_machine_type }}"
-    initialize_params:
-      disk_size_gb: 25
-      source_image: "{{ gcp_image_name }}"
+    metadata:
+      ssh-keys: "{{ gcp_ssh_user }}:{{ gcp_ssh_key }}"
+    disks:
+    - auto_delete: yes
+      boot: yes
+      initialize_params:
+        disk_size_gb: 25
+        source_image: "{{ gcp_image_name }}"
     network_interfaces:
     - network: "{{ network }}"
       access_configs:
       - name: External NAT
-        nat_ip: "{{ addresses[loop_idx] }}"
+        nat_ip: "{{ addresses.results[loop_idx] }}"
         type: ONE_TO_ONE_NAT
     zone: "{{ gcp_zone }}"
     project: "{{ gcp_project_id }}"
@@ -41,6 +60,20 @@
   loop: "{{ gcp_rnaseq_vms }}"
   loop_control:
     index_var: loop_idx
+
+- name: Print addresses
+  debug: msg="{{ instances }}"
+
+#- name: Wait for SSH to come up
+#  wait_for: host={{ addresses.results[loop_idx].address }} port=22 delay=10 timeout=60
+#  loop: "{{ gcp_rnaseq_vms }}"
+#  loop_control:
+#    index_var: loop_idx
+
+- name: Add hosts to in-memory inventory
+  add_host: name={{ item.address }} groupname=rnaseq_gcloud_vms
+  loop: "{{ addresses.results }}"
+
 
 # TODO: SSH security group
 # TODO: Print IP address

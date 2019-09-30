@@ -1,7 +1,9 @@
-gcp_rnaseq_vms: ['rs01','rs02']
-gcp_image_name: "rnaseq-workshop-20190930-142436"
+gcp_rnaseq_vms: ['rs07']
+gcp_image_name: "projects/rnaseq-workshop/global/images/rnaseq-workshop-20190930-142436"
 gcp_machine_type: "n1-standard-4"
 gcp_project_id: "rnaseq-workshop"
 gcp_service_account_file: "files/rnaseq-workshop-1c58ce829926.json"
 gcp_state: "present"
 gcp_zone: "us-central1-b"
+gcp_ssh_user: "dcl9"
+gcp_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDa1BN93VTu3rVVGmqAmCh48+/BbPQGreTNmoChYhV3OtbZEmayjg+TsXZZElMqvEphmRx+x5kIRxcj0CJU6/BL67B0Z9iknRz5kN6T4U/mJPKjzMVzXKKCe6Feh3yYn4UNn1dRNoyDFoq3OfvDyXXjLqBjVXy/kRvZNsjeWVAUxaMnIKbCeAf6nVDYlgNM+yLRY8XiBSlLUKf3fOHDAj+mE+OuvqCYOZQzy2Sp3EB/AVu8D+M1Pw6TwIS8EU679N8nPc6TPd6I4ZSNZtjYN3UypdCZmNw+6CAQ5LS0tJbcjUpTjHhy45vmn52zYFj22zHXGKEcQKiRqGJfgVsOzmV7 dcl9@Homer15.local"
