@@ -1,0 +1,18 @@
+- name: Allow password auth
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication yes"
+
+- name: Restart sshd
+  systemd:
+    state: restarted
+    name: sshd
+
+# TODO: Limit this to just the host we're on
+- name: Add a workshop user
+  user:
+    name: "{{ item }}"
+    password: "{{ [item, 'password'] | join('-') | password_hash('sha512') }}"
+  loop: "{{ gcp_rnaseq_vms }}"
+

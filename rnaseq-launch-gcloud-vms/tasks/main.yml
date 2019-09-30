@@ -71,7 +71,7 @@
 #    index_var: loop_idx
 
 - name: Add hosts to in-memory inventory
-  add_host: name={{ item.address }} groupname=rnaseq_gcloud_vms
+  add_host: name={{ item.address }} groupname=rnaseq-workshop-gcloud
   loop: "{{ addresses.results }}"
 
 
