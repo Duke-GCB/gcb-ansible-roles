@@ -1,0 +1,23 @@
+- name: Make export dir
+  file:
+    path: /srv/workshop-data
+    state: directory
+    mode: '0755'
+
+# TODO: Replace with actual content
+- name: Place content
+  copy:
+    content: 'Hello World'
+    dest: /srv/workshop-data/hello.txt
+
+- name: Update exports
+  lineinfile:
+    path: /etc/exports
+    regexp: '^/srv/workshop-data'
+    line: '/srv/workshop-data *(ro,sync,no_root_squash)'
+
+- name: Start NFS server
+  systemd:
+    name: nfs-server
+    state: restarted
+    enabled: yes
