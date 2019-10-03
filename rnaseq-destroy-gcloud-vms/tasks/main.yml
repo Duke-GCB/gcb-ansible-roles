@@ -1,0 +1,39 @@
+# Delete in reverse order
+- name: Delete Instances
+  gcp_compute_instance:
+    name: "rnaseq-{{ item }}"
+    state: absent
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+  loop: "{{ gcp_rnaseq_vms }}"
+
+- name: Delete NFS server
+  gcp_compute_instance:
+    name: "rnaseq-nfs"
+    state: absent
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+
+- name: Delete instance addresses
+  gcp_compute_address:
+    name: "address-{{ item }}"
+    region: us-central1
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: absent
+  loop: "{{ gcp_rnaseq_vms }}"
+
+- name: Delete NFS Server Network Address
+  gcp_compute_address:
+    name: "address-nfs"
+    region: us-central1
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: absent
+
