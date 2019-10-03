@@ -5,7 +5,6 @@
     project: "{{ gcp_project_id }}"
     auth_kind: serviceaccount
     service_account_file: "{{ gcp_service_account_file }}"
-    state: "{{ gcp_state }}"
   register: nfs_server_address
 
 - name: Create Instance Network Addresses
@@ -15,7 +14,6 @@
     project: "{{ gcp_project_id }}"
     auth_kind: serviceaccount
     service_account_file: "{{ gcp_service_account_file }}"
-    state: "{{ gcp_state }}"
   register: addresses
   loop: "{{ gcp_rnaseq_vms }}"
 
@@ -40,7 +38,6 @@
     project: "{{ gcp_project_id }}"
     auth_kind: serviceaccount
     service_account_file: "{{ gcp_service_account_file }}"
-    state: "{{ gcp_state }}"
   register: nfs_server
 
 - name: Add nfs server to inventory
@@ -48,7 +45,6 @@
     name: "{{ nfs_server_address.address }}"
     groupname: rnaseq-workshop-gcloud-nfs-server
     nfs_server_ip: "{{ nfs_server.networkInterfaces[0].networkIP }}"
-  when: gcp_state == "present"
 
 - name: Create Instances
   gcp_compute_instance:
@@ -71,7 +67,6 @@
     project: "{{ gcp_project_id }}"
     auth_kind: serviceaccount
     service_account_file: "{{ gcp_service_account_file }}"
-    state: "{{ gcp_state }}"
   register: instances
   loop: "{{ gcp_rnaseq_vms }}"
   loop_control:
@@ -79,14 +74,12 @@
 
 - name: Wait for NFS SSH to come up
   wait_for: host={{ nfs_server_address.address }} port=22 delay=10 timeout=60
-  when: gcp_state == "present"
 
 - name: Wait for instances SSH to come up
   wait_for: host={{ addresses.results[loop_idx].address }} port=22 delay=10 timeout=60
   loop: "{{ gcp_rnaseq_vms }}"
   loop_control:
     index_var: loop_idx
-  when: gcp_state == "present"
 
 - name: Add hosts to in-memory inventory and assign users
   add_host:
@@ -96,4 +89,3 @@
   loop: "{{ addresses.results }}"
   loop_control:
     index_var: loop_idx
-  when: gcp_state == "present"
