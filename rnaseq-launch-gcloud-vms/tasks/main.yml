@@ -33,6 +33,7 @@
   register: addresses
   loop: "{{ gcp_rnaseq_vms }}"
 
+
 - name: Create Instances
   gcp_compute_instance:
     name: "rnaseq-{{ item }}"
@@ -61,23 +62,23 @@
   loop_control:
     index_var: loop_idx
 
-- name: Print addresses
-  debug: msg="{{ instances }}"
+- name: Wait for SSH to come up
+  wait_for: host={{ addresses.results[loop_idx].address }} port=22 delay=10 timeout=60
+  loop: "{{ gcp_rnaseq_vms }}"
+  loop_control:
+    index_var: loop_idx
+  when: gcp_state == "present"
 
-#- name: Wait for SSH to come up
-#  wait_for: host={{ addresses.results[loop_idx].address }} port=22 delay=10 timeout=60
-#  loop: "{{ gcp_rnaseq_vms }}"
-#  loop_control:
-#    index_var: loop_idx
-
-- name: Add hosts to in-memory inventory
-  add_host: name={{ item.address }} groupname=rnaseq-workshop-gcloud
+- name: Add hosts to in-memory inventory and assign users
+  add_host:
+    name: "{{ item.address }}"
+    groupname: rnaseq-workshop-gcloud
+    workshop_user: "{{ gcp_rnaseq_vms[loop_idx]}}"
   loop: "{{ addresses.results }}"
+  loop_control:
+    index_var: loop_idx
+  when: gcp_state == "present"
 
-
-# TODO: SSH security group
-# TODO: Print IP address
-# TODO: set username/password
 # TODO mount storage
 
 # TODO: Instance templates?

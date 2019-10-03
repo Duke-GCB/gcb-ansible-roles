@@ -9,10 +9,10 @@
     state: restarted
     name: sshd
 
-# TODO: Limit this to just the host we're on
 - name: Add a workshop user
   user:
-    name: "{{ item }}"
-    password: "{{ [item, 'password'] | join('-') | password_hash('sha512') }}"
-  loop: "{{ gcp_rnaseq_vms }}"
+    name: "{{ workshop_user }}"
+    password: "{{ [workshop_user, 'password'] | join('-') | password_hash('sha512') }}"
 
+
+# TODO: Report the users and IP addresses
