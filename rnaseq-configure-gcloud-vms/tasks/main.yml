@@ -14,5 +14,18 @@
     name: "{{ workshop_user }}"
     password: "{{ [workshop_user, 'password'] | join('-') | password_hash('sha512') }}"
 
+- name: Create local file of workshop VM
+  become: false
+  local_action:
+    module: copy
+    content: "user\tip\tpassword"
+    dest: workshop_vms.txt
+    force: no
 
-# TODO: Report the users and IP addresses
+- name: Write local file of workshop VM connection info
+  become: false
+  local_action:
+    module: lineinfile
+    line: "{{ workshop_user }}\t{{inventory_hostname}}\t{{workshop_user}}-password"
+    regexp: "^{{ workshop_user }}"
+    dest: workshop_vms.txt
