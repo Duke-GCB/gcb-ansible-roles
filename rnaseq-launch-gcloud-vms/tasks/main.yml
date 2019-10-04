@@ -76,10 +76,8 @@
   wait_for: host={{ nfs_server_address.address }} port=22 delay=10 timeout=60
 
 - name: Wait for instances SSH to come up
-  wait_for: host={{ addresses.results[loop_idx].address }} port=22 delay=10 timeout=60
-  loop: "{{ gcp_rnaseq_vms }}"
-  loop_control:
-    index_var: loop_idx
+  wait_for: host={{ item.address }} port=22 delay=10 timeout=60
+  loop: "{{ addresses.results }}"
 
 - name: Add hosts to in-memory inventory and assign users
   add_host:
