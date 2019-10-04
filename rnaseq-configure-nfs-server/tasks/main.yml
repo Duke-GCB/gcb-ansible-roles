@@ -1,14 +1,23 @@
+- name: Check if data exists
+  stat:
+    path: /srv/workshop-data
+  register: workshop_data
+
 - name: Make export dir
   file:
     path: /srv/workshop-data
     state: directory
     mode: '0755'
+  when: workshop_data.stat.exists == false
 
-# TODO: Replace with actual content
-- name: Place content
-  copy:
-    content: 'Hello World'
-    dest: /srv/workshop-data/hello.txt
+- name: Place NFS Data into /srv/workshop-data
+  unarchive:
+    src: "{{ gcp_nfs_data }}"
+    dest: /srv/workshop-data
+    extra_opts:
+    - --transform
+    - s|^nfs/data/||
+  when: workshop_data.stat.exists == false
 
 - name: Update exports
   lineinfile:
