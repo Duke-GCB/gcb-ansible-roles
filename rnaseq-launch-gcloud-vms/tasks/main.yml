@@ -1,6 +1,6 @@
 - name: Create NFS Server Network Address
   gcp_compute_address:
-    name: "address-nfs"
+    name: "nfs-address"
     region: "{{ gcp_region }}"
     project: "{{ gcp_project_id }}"
     auth_kind: serviceaccount
@@ -9,7 +9,7 @@
 
 - name: Create reusable NFS Server Disk
   gcp_compute_disk:
-    name: "disk-nfs"
+    name: "nfs-disk"
     size_gb: 50
     source_image: "{{ gcp_image_name }}"
     zone: "{{ gcp_zone }}"
@@ -21,7 +21,7 @@
 
 - name: launch an NFS server
   gcp_compute_instance:
-    name: "rnaseq-nfs"
+    name: "nfs-server"
     machine_type: "{{ gcp_nfs_machine_type }}"
     metadata:
       ssh-keys: "{{ gcp_ssh_user }}:{{ gcp_ssh_key }}"
@@ -48,7 +48,7 @@
 
 - name: Create Instance Network Addresses
   gcp_compute_address:
-    name: "address-{{ item }}"
+    name: "{{ item }}-address"
     region: "{{ gcp_region }}"
     project: "{{ gcp_project_id }}"
     auth_kind: serviceaccount
@@ -58,7 +58,7 @@
 
 - name: Create Instances
   gcp_compute_instance:
-    name: "rnaseq-{{ item }}"
+    name: "{{ item }}-instance"
     machine_type: "{{ gcp_machine_type }}"
     metadata:
       ssh-keys: "{{ gcp_ssh_user }}:{{ gcp_ssh_key }}"
