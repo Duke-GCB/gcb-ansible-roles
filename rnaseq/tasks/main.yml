@@ -126,9 +126,6 @@
 - name: Create NFS directory
   become: yes
   file: path=/nfs/data state=directory mode=0755
-#- name: mount /nfs/data
-#  become: yes
-#  mount: fstype=nfs opts='vers=3' path=/nfs/data src={{ readonly }} state=mounted
 - name: Create GSEA directory
   become: yes
   file: path=/opt/GSEA state=directory mode=0755
