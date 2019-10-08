@@ -13,7 +13,7 @@
     name: "{{ system_data_item.pvc_name }}"
 
 - name: List any pods created by stage system data job
-  k8s_info:
+  k8s_facts:
     namespace: "{{ namespace_name }}"
     kind: Pod
     label_selectors:

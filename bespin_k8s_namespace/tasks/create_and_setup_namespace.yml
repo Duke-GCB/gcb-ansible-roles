@@ -17,7 +17,7 @@
     namespace: "{{ namespace_name }}"
 
 - name: "Read lando service account"
-  k8s_info:
+  k8s_facts:
     api_version: v1
     kind: ServiceAccount
     name: lando
@@ -28,7 +28,7 @@
     service_account_secret_name: "{{ service_account_response.resources[0]['secrets'][0]['name'] }}"
 
 - name: Fetch lando service account secret details
-  k8s_info:
+  k8s_facts:
     api_version: v1
     kind: Secret
     name: "{{ service_account_secret_name }}"
