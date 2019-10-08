@@ -1,0 +1,32 @@
+- name: Check if data exists
+  stat:
+    path: /srv/workshop-data
+  register: workshop_data
+
+- name: Make export dir
+  file:
+    path: /srv/workshop-data
+    state: directory
+    mode: '0755'
+  when: workshop_data.stat.exists == false
+
+- name: Place NFS Data into /srv/workshop-data
+  unarchive:
+    src: "{{ gcp_nfs_data }}"
+    dest: /srv/workshop-data
+    extra_opts:
+    - --transform
+    - s|^nfs/data/||
+  when: workshop_data.stat.exists == false
+
+- name: Update exports
+  lineinfile:
+    path: /etc/exports
+    regexp: '^/srv/workshop-data'
+    line: '/srv/workshop-data *(ro,sync,no_root_squash)'
+
+- name: Start NFS server
+  systemd:
+    name: nfs-server
+    state: restarted
+    enabled: yes

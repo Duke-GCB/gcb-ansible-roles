@@ -1,0 +1,99 @@
+- name: Create NFS Server Network Address
+  gcp_compute_address:
+    name: "nfs-address"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+  register: nfs_server_address
+
+- name: Create reusable NFS Server Disk
+  gcp_compute_disk:
+    name: "nfs-disk"
+    size_gb: 50
+    source_image: "{{ gcp_image_name }}"
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+    state: present
+  register: nfs_disk
+
+- name: launch an NFS server
+  gcp_compute_instance:
+    name: "nfs-server"
+    machine_type: "{{ gcp_nfs_machine_type }}"
+    metadata:
+      ssh-keys: "{{ gcp_ssh_user }}:{{ gcp_ssh_key }}"
+    disks:
+    - auto_delete: no
+      boot: yes
+      source: "{{ nfs_disk }}"
+    network_interfaces:
+    - access_configs:
+      - name: External NAT
+        nat_ip: "{{ nfs_server_address }}"
+        type: ONE_TO_ONE_NAT
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+  register: nfs_server
+
+- name: Add nfs server to inventory
+  add_host:
+    name: "{{ nfs_server_address.address }}"
+    groupname: rnaseq-workshop-gcloud-nfs-server
+    nfs_server_ip: "{{ nfs_server.networkInterfaces[0].networkIP }}"
+
+- name: Create Instance Network Addresses
+  gcp_compute_address:
+    name: "{{ item }}-address"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+  register: addresses
+  loop: "{{ gcp_rnaseq_vms }}"
+
+- name: Create Instances
+  gcp_compute_instance:
+    name: "{{ item }}-instance"
+    machine_type: "{{ gcp_machine_type }}"
+    metadata:
+      ssh-keys: "{{ gcp_ssh_user }}:{{ gcp_ssh_key }}"
+    disks:
+    - auto_delete: yes
+      boot: yes
+      initialize_params:
+        disk_size_gb: 25
+        source_image: "{{ gcp_image_name }}"
+    network_interfaces:
+    - access_configs:
+      - name: External NAT
+        nat_ip: "{{ addresses.results[loop_idx] }}"
+        type: ONE_TO_ONE_NAT
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ gcp_service_account_file }}"
+  register: instances
+  loop: "{{ gcp_rnaseq_vms }}"
+  loop_control:
+    index_var: loop_idx
+
+- name: Wait for NFS SSH to come up
+  wait_for: host={{ nfs_server_address.address }} port=22 delay=10 timeout=60
+
+- name: Wait for instances SSH to come up
+  wait_for: host={{ item.address }} port=22 delay=10 timeout=60
+  loop: "{{ addresses.results }}"
+
+- name: Add hosts to in-memory inventory and assign users
+  add_host:
+    name: "{{ item.address }}"
+    groupname: rnaseq-workshop-gcloud
+    workshop_user: "{{ gcp_rnaseq_vms[loop_idx]}}"
+  loop: "{{ addresses.results }}"
+  loop_control:
+    index_var: loop_idx

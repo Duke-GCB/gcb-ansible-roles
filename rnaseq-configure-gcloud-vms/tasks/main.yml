@@ -1,0 +1,39 @@
+- name: Allow password auth
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication yes"
+
+- name: Restart sshd
+  systemd:
+    state: restarted
+    name: sshd
+
+- name: Add a workshop user
+  user:
+    name: "{{ workshop_user }}"
+    password: "{{ [workshop_user, 'pw'] | join('') | password_hash('sha512') }}"
+
+- name: Mount NFS
+  mount:
+    fstype: nfs
+    opts: "vers=3,ro"
+    path: "/nfs/data"
+    src: "{{ hostvars[groups['rnaseq-workshop-gcloud-nfs-server'][0]].nfs_server_ip }}:/srv/workshop-data"
+    state: mounted
+
+- name: Create local file of workshop VM
+  become: false
+  local_action:
+    module: copy
+    content: "user\tip\tpassword"
+    dest: workshop_vms.txt
+    force: no
+
+- name: Write local file of workshop VM connection info
+  become: false
+  local_action:
+    module: lineinfile
+    line: "{{ workshop_user }}\t{{inventory_hostname}}\t{{workshop_user}}pw"
+    regexp: "^{{ workshop_user }}"
+    dest: workshop_vms.txt

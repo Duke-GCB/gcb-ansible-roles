@@ -10,7 +10,7 @@
       - unzip
       - tcsh
       - evince
-      - firefox-38.7.0-1.el7_2
+      - firefox
       - xorg-x11-xauth
       - xorg-x11-apps
       - xorg-x11-xinit
@@ -47,12 +47,12 @@
     dest: /etc/ssh/sshd_config
     regexp: '^#X11DisplayOffset'
     line: 'X11DisplayOffset 10'
-- name: Install cran packages for R
+- name: Install plotting packages packages for R
   become: yes
-  command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos=c('http://archive.linux.duke.edu/cran/'))"
+  command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos = 'http://cran.us.r-project.org')"
 - name: Install bioconductor packages for R
   become: yes
-  command: /usr/bin/Rscript -e "source('http://bioconductor.org/biocLite.R'); biocLite('DESeq2')"
+  command: /usr/bin/Rscript -e "install.packages('BiocManager', repos = 'http://cran.us.r-project.org'); BiocManager::install('DESeq2');"
 - name: Install QoRTs R package
   become: yes
   command: /usr/bin/Rscript -e "install.packages('http://hartleys.github.io/QoRTs/QoRTs_STABLE.tar.gz',repos=NULL,type='source');"
@@ -126,15 +126,12 @@
 - name: Create NFS directory
   become: yes
   file: path=/nfs/data state=directory mode=0755
-- name: mount /nfs/data
-  become: yes
-  mount: fstype=nfs opts='vers=3' path=/nfs/data src={{ readonly }} state=mounted
 - name: Create GSEA directory
   become: yes
   file: path=/opt/GSEA state=directory mode=0755
 - name: Symlink GSEA jar file to /opt/GSEA/gsea-3.0.jar
   become: yes
-  file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link
+  file: src=/nfs/data/bin/GSEA3/gsea-3.0.jar dest=/opt/GSEA/gsea-3.0.jar state=link force=yes
 - name: Create QoRTs directory
   become: yes
   file: path=/opt/QoRTs state=directory mode=0755
