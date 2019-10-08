@@ -7,3 +7,4 @@
 - include: tasks/create_file_storage.yml
   environment: "{{ k8s_auth_env }}"
 - include: tasks/update_bespin_api_connection.yml
+  when: setup_bespin_api
