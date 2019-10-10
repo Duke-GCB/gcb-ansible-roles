@@ -4,5 +4,5 @@ metadata:
   name: pvc-manager-role
 rules:
 - apiGroups: [""]
-  resources: ["pvc"]
+  resources: ["persistentvolumeclaims"]
   verbs: ["create", "delete", "list", "watch"]

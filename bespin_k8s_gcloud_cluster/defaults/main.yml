@@ -1,3 +1,4 @@
 large_pool_name: large-machine-pool
 filestore_description: "Bespin-ReadWriteMany-filestore"
 filestore_network_name: "default"
+setup_bespin_api: yes

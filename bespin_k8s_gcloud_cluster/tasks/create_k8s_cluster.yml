@@ -2,22 +2,19 @@
   command: >
     gcloud container clusters create "{{ cluster_name }}"
     --zone "{{ gcloud_compute_zone }}"
-    --machine-type "{{ gcloud_machine_type }}"
-    --enable-autoscaling
     --no-enable-autoupgrade
+    --no-enable-autoscaling
+    --machine-type "{{ gcloud_machine_type }}"
     --num-nodes "{{ gcloud_num_nodes }}"
-    --min-nodes "{{ gcloud_min_nodes }}"
-    --max-nodes "{{ gcloud_max_nodes }}"
   when: not cluster_exists
 
 - name: Create the large-machine-pool node pool
   command: >
     gcloud container node-pools create large-machine-pool
-    --cluster {{ cluster_name }}
-    --zone {{ gcloud_compute_zone }}
-    --enable-autoscaling
-    --machine-type {{ large_pool_machine_type }}
-    --num-nodes {{ large_pool_num_nodes }}
-    --min-nodes {{ large_pool_min_nodes }}
-    --max-nodes {{ large_pool_max_nodes }}
+    --cluster "{{ cluster_name }}"
+    --zone "{{ gcloud_compute_zone }}"
+    --no-enable-autoscaling
+    --no-enable-autoupgrade
+    --machine-type "{{ large_pool_machine_type }}"
+    --num-nodes "{{ large_pool_num_nodes }}"
   when: not large_node_pool_exists
