@@ -28,7 +28,7 @@
     name: d4s2-app
     networks:
       - name: "{{ d4s2_docker_network }}"
-    env: "{{ d4s2_docker_env }}"
+    env: "{{ d4s2_docker_env | combine({'GUNICORN_CMD_ARGS':'--worker-class gevent'})}}"
     pull: false
     state: started
     restart_policy: always
