@@ -22,6 +22,7 @@
       - mesa-libGLU
       - java-1.8.0-openjdk
       - python-pip
+      - python-virtualenv
       - python-devel
       - nfs-utils
       - libxml2-devel
@@ -61,7 +62,7 @@
   git:
     repo: 'https://github.com/alexdobin/STAR.git'
     dest: /opt/STAR
-    version: 2.5.3a
+    version: "2.5.3a"
 - name: Symlink STAR
   become: yes
   file: src=/opt/STAR/bin/Linux_x86_64/STAR dest=/usr/local/bin/STAR state=link
@@ -97,19 +98,32 @@
   pip:
     name: pip
     extra_args: --upgrade
+- name: Create virtualenv
+  become: yes
+  command: virtualenv /opt/venv creates="/opt/venv"
+- name: activate virtualenv in path
+  become: yes
+  blockinfile:
+    create: yes
+    path: /etc/profile.d/venv.sh
+    mode: 0644
+    block: source /opt/venv/bin/activate
 - name: Install cutadapt
   become: yes
   pip:
     name: cutadapt
-    version: 1.14
+    virtualenv: /opt/venv
+    version: "1.14"
 - name: Install MultiQC
   become: yes
   pip:
     name: multiqc
+    virtualenv: /opt/venv
     extra_args: "--ignore-installed"
 - name: Install HTSeq
   become: yes
   pip:
+    virtualenv: /opt/venv
     name: HTSeq
 - name: Create TrimGalore directory
   become: yes
