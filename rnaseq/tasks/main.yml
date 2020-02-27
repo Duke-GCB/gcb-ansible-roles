@@ -108,6 +108,11 @@
     path: /etc/profile.d/venv.sh
     mode: 0644
     block: source /opt/venv/bin/activate
+- name: Install Cython
+  become: yes
+  pip:
+    name: Cython
+    virtualenv: /opt/venv
 - name: Install cutadapt
   become: yes
   pip:
