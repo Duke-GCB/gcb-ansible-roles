@@ -50,10 +50,10 @@
     line: 'X11DisplayOffset 10'
 - name: Install plotting packages packages for R
   become: yes
-  command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos = 'http://cran.us.r-project.org')"
+  command: /usr/bin/Rscript -e "install.packages(pkgs=c('ggplot2', 'gplots'), repos = 'https://cloud.r-project.org')"
 - name: Install bioconductor packages for R
   become: yes
-  command: /usr/bin/Rscript -e "install.packages('BiocManager', repos = 'http://cran.us.r-project.org'); BiocManager::install('DESeq2');"
+  command: /usr/bin/Rscript -e "install.packages('BiocManager', repos = 'https://cloud.r-project.org'); BiocManager::install('DESeq2');"
 - name: Install QoRTs R package
   become: yes
   command: /usr/bin/Rscript -e "install.packages('http://hartleys.github.io/QoRTs/QoRTs_STABLE.tar.gz',repos=NULL,type='source');"
@@ -108,6 +108,11 @@
     path: /etc/profile.d/venv.sh
     mode: 0644
     block: source /opt/venv/bin/activate
+- name: Install Cython
+  become: yes
+  pip:
+    name: Cython
+    virtualenv: /opt/venv
 - name: Install cutadapt
   become: yes
   pip:
