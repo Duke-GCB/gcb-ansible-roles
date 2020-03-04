@@ -1,0 +1,71 @@
+- name: Create persistent volumes to house data
+  k8s:
+    state: present
+    definition: "{{ lookup('url', base_url + 'Storage.yaml', split_lines=False) }}"
+    namespace: "{{ deploy_namespace }}"
+
+- name: Create a Secret containing ddsclient-config-secret
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: ddsclient-config-secret
+      type: Opaque
+      data:
+        ddsclient-config: "{{ lookup('file', ddsclient_config_file, split_lines=False) | b64encode}}"
+    namespace: "{{ deploy_namespace }}"
+
+- name: Create config map for staging data script
+  k8s:
+    state: present
+    definition: "{{ lookup('url', base_url + 'DownloadDDHDataScriptConfigMap.yaml', split_lines=False) }}"
+    namespace: "{{ deploy_namespace }}"
+
+- name: Setup job staging template
+  k8s:
+    state: present
+    definition: "{{ lookup('url', base_url + 'DownloadDDHDataScriptConfigMap.yaml', split_lines=False) }}"
+    namespace: "{{ deploy_namespace }}"
+
+- name: Create Build config that builds based on ddh github master branch
+  k8s:
+    state: present
+    definition: "{{ lookup('url', base_url + 'Build.yaml', split_lines=False) }}"
+    namespace: "{{ deploy_namespace }}"
+
+- name: Create deployment for ddh-shiny-app
+  k8s:
+    state: present
+    definition: "{{ lookup('url', base_url + 'Build.yaml', split_lines=False) }}"
+    namespace: "{{ deploy_namespace }}"
+
+- name: "Create routes for {{ domain_name }} and www.{{ domain_name }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Route
+      metadata:
+        labels:
+          app: ddh
+        name: "ddh-shiny-route-{{ loop_idx }}"
+      spec:
+        host: "{{ item }}"
+        path: /
+        tls:
+          caCertificate: "{{ lookup('file', tls_ca_certificate_file, split_lines=False) }}"
+          certificate: "{{ lookup('file', tls_certificate_file, split_lines=False) }}"
+          key: "{{ lookup('file', tls_key_file, split_lines=False) }}"
+          insecureEdgeTerminationPolicy: Redirect
+          termination: edge
+        to:
+          kind: Service
+          name: ddh-shiny-app
+    namespace: "{{ deploy_namespace }}"
+  loop:
+    - "{{ domain_name  }}"
+    - "www.{{ domain_name }}"
+  loop_control:
+    index_var: loop_idx
