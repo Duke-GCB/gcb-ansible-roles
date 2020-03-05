@@ -1,0 +1,7 @@
+domain_name: "datadrivenhypothesis.org"
+deploy_namespace: depmap
+base_url: https://raw.githubusercontent.com/matthewhirschey/ddh/master/openshift/
+ddsclient_config_file: 'datadrivenhypothesis-ddsclient.json'
+tls_ca_certificate_file: "www_datadrivenhypothesis_org.ca-bundle"
+tls_certificate_file: "www_datadrivenhypothesis_org.crt"
+tls_key_file: "www_datadrivenhypothesis_org-privkey.pem"
