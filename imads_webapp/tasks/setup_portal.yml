@@ -13,6 +13,10 @@
     ports:
       - "80:80"
       - "443:443"
+    log_driver: "{{ portal_log_driver }}"
+    log_options:
+      max-size: "{{ portal_log_max_size }}"
+      max-file: "{{ portal_log_max_file }}"
     pull: false
     state: started
     restart_policy: always
