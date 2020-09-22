@@ -1,0 +1,14 @@
+# assumes git and python 3 have been installed
+
+- name: Make sure the seqcore scripts repo is up to date
+  git:
+    repo: "{{ seqcore_repo }}"
+    dest: "{{ seqcore_repo_dest }}"
+    version: "{{ seqcore_repo_version }}"
+    accept_hostkey: yes
+
+- name: Install python3 requirements for seqcore scripts
+  become: yes
+  pip:
+    executable: pip3
+    requirements: "{{ seqcore_repo_dest }}/requirements.txt"
