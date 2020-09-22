@@ -1,7 +1,6 @@
 # assumes git and python 3 have been installed
 
 - name: Make sure the seqcore scripts repo is up to date
-  # will we need to become here and will that cause issues with the private repo?
   git:
     repo: "{{ seqcore_repo }}"
     dest: "{{ seqcore_repo_dest }}"
