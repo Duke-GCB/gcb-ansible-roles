@@ -1,4 +1,4 @@
 ---
 seqcore_repo: git@gitlab.oit.duke.edu:gcb-informatics/seqcore-data-delivery.git
 seqcore_repo_version: master
-seqcore_repo_dest: /nfs/oit_seqcore/software/dataDelivery/
+seqcore_repo_dest: /nfs/oit_seqcore/software/dataDelivery
