@@ -1,6 +1,11 @@
-- name: Ensure directory exists for cloning git repo
+- name: Ensure the base directory exists
   file:
     state: directory
+    path: "{{ local_repo_root }}"
+
+- name: Delete any existing repo directory
+  file:
+    state: absent
     path: "{{ local_repo_root }}/{{ image_name }}-{{ version }}"
 
 # Note that this checks out the git repo to a specific local directory based on the
