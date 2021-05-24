@@ -1,0 +1,48 @@
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: latest
+    update_cache: yes
+
+- name: "create www directory"
+  file:
+    path: /var/www/{{ domain }}
+    state: directory
+    mode: '0775'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: copy index.html
+  template:
+    src: index.html.j2
+    dest: /var/www/{{ domain }}/index.html
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: delete default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: copy nginx site.conf
+  template:
+    src: site.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ domain }}
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Let's Encrypt (certbot)
+  apt:
+    pkg:
+    - certbot
+    - python3-certbot-nginx
+
+- name: Configure certbot
+  command: certbot --nginx -d {{ domain }} --non-interactive --agree-tos -m {{ sysadmin_email }} --redirect
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
