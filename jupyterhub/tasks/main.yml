@@ -25,10 +25,10 @@
   yum: name={{item}} state=present update_cache=yes
   when: ansible_os_family == 'RedHat'
   with_items:
-  - python36u
-  - python36u-setuptools
-  - python36u-devel
-  - python36u-pip
+  - python37
+  - python37-setuptools
+  - python37-devel
+  - python37-pip
   - sudo
   - npm
   - nodejs
