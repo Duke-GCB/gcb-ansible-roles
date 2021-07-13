@@ -8,42 +8,53 @@
 
 
 - name: Install Python 3, Node, and NPM
-  apt: 
-     name: ['python3', 'python3-setuptools', 'python3-dev', 'python3-pip', 'sudo', 'npm', 'nodejs-legacy', 'git']
-     state: present 
-     update_cache: yes
+  apt: name={{item}} state=present update_cache=yes
   when: ansible_os_family == 'Debian'
+  with_items:
+  - python3
+  - python3-setuptools
+  - python3-dev
+  - python3-pip
+  - sudo
+  - npm
+  - nodejs-legacy
+  - git
   tags: jupyter-deps
 
 - name: Install Python 3, Node, and NPM
-  apt:
-     name: ['python37', 'python37-setuptools', 'python37-devel', 'python37-pip', 'sudo', 'npm', 'nodejs', 'git']
-     state: present 
-     update_cache: yes
-  when: ansible_os_family == 'Debian'
+  yum: name={{item}} state=present update_cache=yes
+  when: ansible_os_family == 'RedHat'
+  with_items:
+  - python36u
+  - python36u-setuptools
+  - python36u-devel
+  - python36u-pip
+  - sudo
+  - npm
+  - nodejs
+  - git
   tags: jupyter-deps
 
 - name: Install Docker and Docker-py
-  apt: 
-      name: ['docker.io', 'python3-docker'] 
-      state: present 
-      update_cache: yes
+  apt: name={{item}} state=present update_cache=yes
   when: ansible_os_family == 'Debian'
+  with_items:
+  - docker.io
+  - python3-docker
   when: spawner == 'docker'
   tags: jupyter-deps
 
 - name: Install Docker and Docker-py
-  apt:
-      name: ['docker.io', 'python3-docker']
-      state: present 
-      update_cache: yes
+  yum: name={{item}} state=present update_cache=yes
   when: ansible_os_family == 'RedHat'
+  with_items:
+  - docker.io
+  - python3-docker
   when: spawner == 'docker'
   tags: jupyter-deps
 
 - name: install npm package configurable-http-proxy
   npm: name=configurable-http-proxy global=yes state=present
-  when: spawner == 'docker'
   tags: jupyter-deps
 
 ####################################
@@ -103,13 +114,13 @@
 ####################################
 - name: set pip to use
   set_fact:
-     pip_executable: "/usr/bin/pip3.6"
-  when: ansible_os_family == "RedHat"
+    pip_executable: "/usr/bin/pip3.6"
+  when: ansible_os_family == 'RedHat'
 
 - name: set pip to use
   set_fact:
-     pip_executable: "/usr/bin/pip3"
-  when: ansible_os_family == "Debian"
+    pip_executable: "/usr/bin/pip3"
+  when: ansible_os_family == 'Debian'
 
 - name: Install Jupyter via pip
   pip: executable="{{ pip_executable }}" name=jupyter version="{{ jupyter_version }}" extra_args='--upgrade'
@@ -120,7 +131,7 @@
   tags: jupyter-deps
 
 - name: install sudospawner via pip
-  pip: executable="{{ pip_executable }}" name=sudospawner
+  pip: executable={{pip_executable}} name=sudospawner
   tags: jupyter-sudospawner
   when: spawner == 'sudo'
 
@@ -263,7 +274,7 @@
       c.BatchSpawnerBase.req_runtime = '{{ req_runtime }}'
       c.BatchSpawnerBase.req_memory = '{{ req_memory }}'
       c.BatchSpawnerBase.env_keep = ['LANG','JUPYTERHUB_API_TOKEN','JPY_API_TOKEN']
-      c.SlurmSpawner.batch_script = ""#!/bin/bash
+      c.SlurmSpawner.batch_script = """#!/bin/bash
       #SBATCH --partition={partition}
       #SBATCH --time={runtime}
       #SBATCH --output={homedir}/jupyterhub_slurmspawner_%j.log
@@ -290,10 +301,10 @@
         fi
       else
         # No spawner rc file, activate the default environment providing jupyterhub-singleuser
-        {{load_jupyterhub_path}}
+        {{ load_jupyterhub_path }}
       fi
       {cmd}
-      ""
+      """
 
 ####################################
 # Init script for starting service
@@ -310,7 +321,7 @@
   when: ansible_os_family == 'RedHat'
 
 - name: Ensure hostname is in /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ip}}" line="{{ansible_hostname}}"
+  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ip}}  {{ansible_hostname}}"
   tags: jupyter-config
 
 - name: Place SSL private key
